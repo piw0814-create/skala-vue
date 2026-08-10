@@ -1,4 +1,4 @@
-## DAY1 실습 요약
+# DAY1 실습 요약
 
 - {{ 변수 }}
   → HTML 태그 "내용"에 연결
@@ -38,7 +38,7 @@
 - v-show
 
 - v-for
-
+  ````text
   ▪ 배열 렌더링:
   • <div v-for="(item, index) in items" :key="고유값"></div>
   • <div v-for="item in items" :key="고유값"></div>
@@ -46,6 +46,8 @@
   • <div v-for="(value, key, index) in object" :key="고유값"></div>
   • <div v-for="(value, key) in object" :key="고유값"></div>
   • <div v-for="value in object" :key="고유값"></div>
+  ```text
+  ````
 
 # DAY1 궁금한점
 

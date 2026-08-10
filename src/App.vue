@@ -1,9 +1,28 @@
 <!-- <script setup>
 import SampleOne from './components/practices/basic/SampleOne.vue'
 </script>
+
 <template>
   <div style="padding: 20px">
     <SampleOne />
+  </div>
+</template> -->
+
+<!-- <script setup>
+import { ref } from 'vue'
+
+let normalCount = 0
+const vueCount = ref(0)
+</script>
+<template>
+  <div class="practice-section">
+    <h2>Vue.js 반응형 데이터 학습</h2>
+    <h3>1) 일반 변수 vs 반응형 변수</h3>
+    <p>일반 변수: {{ normalCount }}</p>
+    <button @click="normalCount++">일반 변수 증가</button>
+    <br />
+    <p>반응형 변수: {{ vueCount }}</p>
+    <button @click="vueCount++">반응형 변수 증가</button>
   </div>
 </template> -->
 
@@ -218,7 +237,7 @@ const isVisible = ref(true)
 }
 </style> -->
 
-<script setup>
+<!-- <script setup>
 import { ref } from 'vue'
 
 const fruits = ref(['사과', '바나나', '딸기'])
@@ -249,4 +268,4 @@ const items = ref([
       <li v-for="(item, index) in items" :key="item.id">[{{ index }}] {{ item.name }}</li>
     </ul>
   </div>
-</template>
+</template> -->

@@ -14,7 +14,7 @@ export default defineConfig({
   },
   // 🟢 [커스텀 추가 1] 로컬 개발 서버(Dev Server) 속성 제어
   server: {
-    port: 3000, // 개발 서버의 네트워크 포트를 3000번으로 고정 명세
+    port: 3001, // 개발 서버의 네트워크 포트를 3000번으로 고정 명세
     open: true, // 프로세스 기동(npm run dev) 시 기본 웹 브라우저를 자동 실행
   },
   // 🟢 [커스텀 추가 2] 컴파일 완료된 산출물(Production Build) 사양 제어

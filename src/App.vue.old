@@ -1,0 +1,930 @@
+<!-- ---------------------------DAY1-------------------------------------- -->
+<!-- <script setup>
+import SampleOne from './components/practices/basic/SampleOne.vue'
+</script>
+
+<template>
+  <div style="padding: 20px">
+    <SampleOne />
+  </div>
+</template> -->
+
+<!-- <script setup>
+import { ref } from 'vue'
+
+let normalCount = 0
+const vueCount = ref(0)
+</script>
+<template>
+  <div class="practice-section">
+    <h2>Vue.js 반응형 데이터 학습</h2>
+    <h3>1) 일반 변수 vs 반응형 변수</h3>
+    <p>일반 변수: {{ normalCount }}</p>
+    <button @click="normalCount++">일반 변수 증가</button>
+    <br />
+    <p>반응형 변수: {{ vueCount }}</p>
+    <button @click="vueCount++">반응형 변수 증가</button>
+  </div>
+</template> -->
+
+<!-- <script setup>
+import { ref } from 'vue'
+const welcomeMessage = 'Welcome to Skala-Vue'
+</script>
+<template>
+  <div class="practice-section">
+    <h2>{{ welcomeMessage }}</h2>
+    <p>{{ welcomeMessage.toUpperCase() }}</p>
+    <p>{{ 'Random number: ' + Math.ceil(Math.random() * 100) }}</p>
+  </div>
+</template> -->
+
+<!-- <script setup>
+const rawHtmlData = '이 글자는 <span style="color: red; font-weight: bold;">빨간색 굵은 글자</span>이다.'
+</script>
+<template>
+  <div class="practice-section">
+    <h2>v-html 디렉티브 학습</h2>
+    <h3>일반 보간법 {{}} 사용 결과:</h3>
+    <p>{{ rawHtmlData }}</p>
+    <br />
+    <h3>v-html 디렉티브 사용 결과:</h3>
+    <p v-html="rawHtmlData"></p>
+  </div>
+</template> -->
+
+<!-- <script setup>
+import { ref } from 'vue'
+const inputValue = ref('')
+const message = ref('')
+function showMessage() {
+  message.value = inputValue.value
+}
+</script>
+<template>
+  <div class="practice-section">
+    <h2>v-html XSS 학습</h2>
+    <input v-model="inputValue" placeholder="내용을 입력하세요" />
+    <button @click="showMessage">확인</button>
+    <div v-html="message"></div>
+  </div>
+</template> -->
+
+<!-- <script setup>
+const content = '안녕하세요! <strong>Skala-Vue</strong> 강의입니다.'
+</script>
+<template>
+  <div class="practice-section">
+    <h2>v-text 디렉티브 학습</h2>
+    <h3>1) 일반 보간법 {{}} 결과:</h3>
+    <p>출력: {{ content }}</p>
+    <br />
+    <h3>2) v-text 디렉티브 결과:</h3>
+    <p v-text="'출력: ' + content"></p>
+    <br />
+    <h3>3) v-html 결과 비교:</h3>
+    <p v-html="content"></p>
+  </div>
+</template> -->
+
+<!-- <script setup>
+import { ref } from 'vue'
+const dynamicUrl = 'https://www.naver.com'
+const logoImgSrc = 'https://vuejs.org/images/logo.png'
+const isButtonDisabled = ref(true)
+</script>
+<template>
+  <div class="practice-section">
+    <h2>v-bind 디렉티브 기본 (축약형: 콜론)</h2>
+    <h3>1) 동적 링크 연결</h3>
+    <a :href="dynamicUrl">여기를 클릭하면 네이버로 이동합니다</a>
+    <br />
+    <h3>2) 동적 이미지 연결</h3>
+    <img :src="logoImgSrc" alt="Vue 로고" style="width: 100px" />
+    <br />
+    <h3>3) 버튼 비활성화 제어</h3>
+    <p>현재 버튼 사용 불가능 상태: {{ isButtonDisabled }}</p>
+    <button :disabled="isButtonDisabled">동의해야 클릭할 수 있는 버튼</button>&nbsp;
+    <button @click="isButtonDisabled = !isButtonDisabled">위 버튼 잠금 해제/토글하기</button>
+  </div>
+</template> -->
+
+<!-- <script setup>
+import { ref } from 'vue'
+const isWarning = ref(false) // 객체 바인딩용 스위치
+const themeClass = ref('bg-dark') // 배열 바인딩용 고정 클래스
+</script>
+<template>
+  <div class="practice-section">
+    <h2>v-bind 디렉티브 고급 (클래스 바인딩)</h2>
+    <h3>클래스 바인딩 (객체 형식)</h3>
+    <p :class="{ 'text-danger': isWarning }">현재 경고 상태: {{ isWarning }}</p>
+    <button @click="isWarning = !isWarning">경고 상태 토글</button>
+    <br />
+    <h3>클래스 바인딩 (배열 형식)</h3>
+    <div :class="[themeClass, isWarning ? 'border-red' : 'border-gray']">다중 클래스가 조립된 박스 구역입니다.</div>
+  </div>
+</template>
+<style scoped>
+.text-danger {
+  color: red;
+  font-weight: bold;
+}
+.bg-dark {
+  background-color: #333;
+  color: white;
+  padding: 15px;
+}
+.border-red {
+  border: 3px solid red;
+}
+.border-gray {
+  border: 3px solid #ccc;
+}
+</style> -->
+
+<!-- <script setup>
+import { ref } from 'vue'
+// 1. 객체 바인딩용 변수
+const textColor = ref('purple')
+const boxWidth = ref(150) // 숫자만 제어
+// 2. 배열 바인딩용 스타일 객체 무더기
+const baseBoxStyle = ref({
+  backgroundColor: '#42b883',
+  height: '100px',
+  transition: 'all 0.3s ease', // 부드러운 애니메이션 효과
+})
+</script>
+<template>
+  <div class="practice-section">
+    <h2>v-bind 디렉티브 고급 (스타일 바인딩)</h2>
+    <h3>1) 인라인 스타일 변수 조작 (객체 형식)</h3>
+    <p :style="{ color: textColor, fontWeight: 'bold' }">이 글자의 색상은 실시간으로 바뀝니다.</p>
+    <button @click="textColor = textColor === 'purple' ? 'blue' : 'purple'">글자 색상 토글</button>
+    <br />
+    <h3>2) 다중 스타일 객체 조립 (배열 형식)</h3>
+    <label>박스 가로 크기(px): </label>
+    <input type="number" v-model="boxWidth" step="50" />
+    <br />
+    <div :style="[baseBoxStyle, { width: boxWidth + 'px' }]">
+      <p style="color: white; padding: 10px; text-align: center">가로 크기: {{ boxWidth }}px 박스</p>
+    </div>
+  </div>
+</template> -->
+
+<!-- <script setup>
+const id = 'user-profile-card'
+const src = 'https://vuejs.org/images/logo.png'
+</script>
+<template>
+  <div class="practice-section">
+    <h2>v-bind 디렉티브 고급 (단축 문법)</h2>
+    <div :id>
+      <img :src alt="Vue 로고" style="width: 50px" />
+    </div>
+  </div>
+</template> -->
+
+<!-- <script setup>
+import { ref } from 'vue'
+// 1. 조건부 온/오프 스위치 변수
+const isLogged = ref(false)
+// 2. 다중 조건 분기용 숫자 변수
+const score = ref(85)
+</script>
+<template>
+  <div class="practice-section">
+    <h2>v-if, v-else-if, v-else 디렉티브 학습</h2>
+    <h3>1) 기본 로그인 상태 스위치</h3>
+    <p v-if="isLogged">환영합니다! 회원 전용 화면입니다.</p>
+    <p v-else>로그인이 필요합니다. 먼저 로그인해 주세요.</p>
+    <button @click="isLogged = !isLogged">
+      {{ isLogged ? '로그아웃 하기' : '로그인 하기' }}
+    </button>
+    <br />
+    <h3>2) 성적별 학점 등급 측정 (다중 조건문)</h3>
+    <label>현재 점수 입력: </label>
+    <input type="number" v-model="score" min="0" max="100" step="5" />
+    <br />
+    <div v-if="score >= 90" style="color: green; font-weight: bold">합격 등급: A 학점 (훌륭합니다!)</div>
+    <div v-else-if="score >= 80" style="color: blue">합격 등급: B 학점 (양호합니다.)</div>
+    <div v-else-if="score >= 70" style="color: orange">합격 등급: C 학점 (조금 더 분발하세요.)</div>
+    <div v-else style="color: red; font-weight: bold">합격 등급: F 학점 (재시험 대상입니다.)</div>
+  </div>
+</template> -->
+
+<!-- <script setup>
+import { ref } from 'vue'
+const isVisible = ref(true)
+</script>
+<template>
+  <div class="practice-section">
+    <h2>v-show 디렉티브 학습</h2>
+    <button @click="isVisible = !isVisible">화면 토글하기</button>
+    <br />
+    <div v-show="isVisible" class="box">
+      <p>v-show 상자</p>
+      <p>조건이 false가 되면 CSS display: none이 붙습니다.</p>
+    </div>
+  </div>
+</template>
+<style scoped>
+.box {
+  padding: 10px;
+  margin-top: 5px;
+  color: white;
+  border-radius: 5px;
+  background-color: #3498db; /* 파란색 */
+}
+</style> -->
+
+<!-- <script setup>
+import { ref } from 'vue'
+
+const fruits = ref(['사과', '바나나', '딸기'])
+const user = ref({
+  name: '홍길동',
+  age: 25,
+  role: '개발자',
+})
+const items = ref([
+  { id: 'prod_101', name: '아이폰' },
+  { id: 'prod_102', name: '갤럭시' },
+])
+</script>
+
+<template>
+  <div class="practice-section">
+    <h2>v-for 디렉티브 학습</h2>
+    <h3>1) 배열 렌더링</h3>
+    <ul>
+      <li v-for="(fruit, index) in fruits" :key="index">{{ index + 1 }}번 과일: {{ fruit }}</li>
+    </ul>
+    <h3>2) 객체 렌더링</h3>
+    <ul>
+      <li v-for="(value, key, index) in user" :key="key">[{{ index }}] {{ key }} : {{ value }}</li>
+    </ul>
+    <h3>3) 배열 내 객체 렌더링</h3>
+    <ul>
+      <li v-for="(item, index) in items" :key="item.id">[{{ index }}] {{ item.name }}</li>
+    </ul>
+  </div>
+</template> -->
+
+<!-- ---------------------------DAY2-------------------------------------- -->
+<!-- <script setup>
+import { ref } from 'vue'
+const message = ref('안녕하세요!')
+</script>
+
+<template>
+  <div class="practice-section">
+    <h2>V-pre디렉티브 학습</h2>
+    <p>일반 출력 : {{ message }}</p>
+    <p v-pre>이 글자는 v-pre 디렉티브로 인해 보간법이 적용되지 않습니다: {{ message }}</p>
+  </div>
+</template> -->
+
+<!-- <script setup>
+import { ref } from 'vue'
+const message = ref('느린 네트워크에서도 안전하게 출력되는 메세지')
+</script>
+
+<template>
+  <div class="practice-section">
+    <h2>V-cloak 디렉티브 학습</h2>
+    <p v-cloak>{{ message }}</p>
+  </div>
+</template> -->
+
+<!-- <script setup>
+import { ref } from 'vue'
+const count = ref(1)
+</script>
+
+<template>
+  <div class="practice-section">
+    <h2>V-once 디렉티브 학습</h2>
+    <p>일반 변수(실시간) : {{ count }}</p>
+    <p v-once>이 글자는 v-once 디렉티브로 인해 한 번만 렌더링됩니다: {{ count }}</p>
+    <button @click="count++">카운트 증가</button>
+  </div>
+</template> -->
+
+<!-- <script setup>
+import { ref } from 'vue'
+
+const name = ref('홍길동')
+const age = ref(20)
+</script>
+
+<template>
+  <div class="practice-section">
+    <h2>V-memo 디렉티브 학습</h2>
+    <div v-memo="[name]" style="padding: 20px; border: 1px solid #42b883; margin-bottom: 10px">
+      <p>이 글자는 v-memo 디렉티브로 인해 name이 변경될 때만 렌더링됩니다.</p>
+      <p>이름: {{ name }}</p>
+      <p>나이: {{ age }}</p>
+    </div>
+    <button @click="name = '이순신'">1. 이름변경 (이순신)</button>
+    <button @click="age++">2. 나이 한살 추가</button>
+  </div>
+</template> -->
+
+<!-- <script setup>
+import { ref } from 'vue'
+const count = ref(0)
+</script>
+
+<template>
+  <button @click="count++">클릭 수 : {{ count }}</button>
+</template> -->
+
+<!-- <script setup>
+function handleClick() {
+  alert('버튼이 클릭되었습니다.')
+}
+</script>
+
+<template>
+  <button @click="handleClick">클릭해</button>
+</template> -->
+
+<!-- <script setup>
+import { ref } from 'vue'
+const count = ref(0)
+
+const showAlert = () => {
+  alert('함수가 성공적으로 호출됨')
+}
+</script>
+
+<template>
+  <div class="practice-section">
+    <h2>v-on이벤트 핸들링 기초</h2>
+    <h3>1)인라인 연산 처리</h3>
+    <p>현재 카운트 : {{ count }}</p>
+    <button @click="count++">1씩 증가</button>
+    <br />
+    <h3>2)스크립트 함수 호출</h3>
+    <button @click="showAlert">알림창 띄우기</button>
+  </div>
+</template> -->
+
+<!-- <script setup>
+import { ref } from 'vue'
+
+const position = ref('')
+const tagName = ref('')
+const getOnlyEvent = (e) => {
+  position.value = `좌표: X=${e.clientX}, Y=${e.clientY}`
+}
+const getWithParam = (name, e) => {
+  tagName.value = `대상: ${name} / 클릭된 태그: ${e.target.tagName}`
+}
+</script>
+
+<template>
+  <div class="practice-section">
+    <h2>v-on 이벤트 객체($event) 활용</h2>
+    <p>좌표 : {{ position }}</p>
+    <p>태그 : {{ tagName }}</p>
+    <button @click="getOnlyEvent">클릭 좌표 알아내기</button>
+    <button @click="getWithParam('회원A', $event)">회원 정보와 태그 확인</button>
+  </div>
+</template> -->
+
+<!-- <script setup>
+const handleLink = () => {
+  alert('수식어 덕분에 네이버로 이동하지 않고 함수만 실행됩니다!')
+}
+const handleBox = () => {
+  alert('부모 박스가 클릭되었습니다!')
+}
+const handleChild1 = () => {
+  alert('1번 자식 클릭!')
+}
+const handleChild2 = () => {
+  alert('2번 자식(나만 켜짐) 클릭!')
+}
+</script>
+<template>
+  <div class="practice-section">
+    <h2>이벤트 수식어(Modifiers) 학습</h2>
+    <h3>1) .prevent (기본 동작 막기)</h3>
+    <a href="https://www.naver.com" @click.prevent="handleLink">네이버 링크</a>
+    <br />
+    <h3>2) .stop (이벤트 버블링 막기)</h3>
+    <div @click="handleBox" style="padding: 20px; background-color: #eee">
+      <p>부모 영역 (클릭 시 alert 발동)</p>
+      <button @click="handleChild1">버블링 발생 버튼</button>
+      <button @click.stop="handleChild2">버블링 차단 버튼</button>
+    </div>
+  </div>
+</template> -->
+
+<!-- <script setup>
+import { ref } from 'vue'
+const text1 = ref('') // v-model용 변수
+const text2 = ref('') // 원리 이해용 변수
+</script>
+<template>
+  <div class="practice-section">
+    <h2>v-model 양방향 데이터 바인딩</h2>
+    <h3>1) v-model 축약 문법 (양방향)</h3>
+    <input type="text" v-model="text1" placeholder="여기에 입력하세요" />
+    <p>
+      입력된 값 : <strong>{{ text1 }}</strong>
+    </p>
+    <h3>2) v-model의 내부 작동 원리 (단방향 + 이벤트)</h3>
+    <input type="text" :value="text2" @input="(e) => (text2 = e.target.value)" placeholder="원리 파악용 입력창" />
+    <p>
+      입력된 값 : <strong>{{ text2 }}</strong>
+    </p>
+  </div>
+</template> -->
+
+<!-- <script setup>
+import { ref } from 'vue'
+const comment = ref('')
+const isAgreed = ref(false) // 단일 체크박스는 Boolean
+const favoriteFruits = ref([]) // 다중 체크박스는 반드시 배열([])로 시작!
+const gender = ref('')
+const selectedCar = ref('')
+</script>
+
+<template>
+  <div class="practice-section">
+    <h2>모든 HTML Form 요소와 v-model 매핑</h2>
+    <div>
+      <h3>1) Textarea (장문 텍스트)</h3>
+      <textarea v-model="comment" placeholder="의견을 남겨주세요"></textarea>
+      <p>
+        데이터 상태: <span>{{ comment }}</span>
+      </p>
+    </div>
+    <div>
+      <h3>2) 단일 Checkbox (동의 여부)</h3>
+      <label> <input type="checkbox" v-model="isAgreed" /> 약관에 동의합니다. </label>
+      <p>
+        데이터 상태: <span>{{ isAgreed }}</span>
+      </p>
+    </div>
+    <div>
+      <h3>3) 다중 Checkbox (복수 선택-> 배열에 저장)</h3>
+      <label><input type="checkbox" value="사과" v-model="favoriteFruits" /> 사과</label> &nbsp; <label><input type="checkbox" value="바나나" v-model="favoriteFruits" /> 바나나</label> &nbsp;
+      <label><input type="checkbox" value="딸기" v-model="favoriteFruits" /> 딸기</label>
+      <p>
+        데이터 상태 (배열): <span>{{ favoriteFruits }}</span>
+      </p>
+    </div>
+    <div>
+      <h3>4) Radio (단일 선택)</h3>
+      <label><input type="radio" value="남성" v-model="gender" /> 남성</label> &nbsp;
+      <label><input type="radio" value="여성" v-model="gender" /> 여성</label>
+      <p>
+        데이터 상태: <span>{{ gender }}</span>
+      </p>
+    </div>
+    <div>
+      <h3>5) Select (드롭다운 선택)</h3>
+      <select v-model="selectedCar">
+        <option value="">-- 선택하세요--</option>
+        <option value="tesla">테슬라</option>
+        <option value="hyundai">현대자동차</option>
+        <option value="bmw">BMW</option>
+      </select>
+      <p>
+        데이터 상태: <span>{{ selectedCar }}</span>
+      </p>
+    </div>
+  </div>
+</template> -->
+
+<!-- <script setup>
+import { ref } from 'vue'
+// v-model Modifiers 실습용 reactive 변수 선언
+const lazyText = ref('')
+const age = ref('')
+const userEmail = ref('')
+const price = ref('')
+</script>
+<template>
+  <div class="practice-section">
+    <h2>v-model 수식어 (Modifiers) 활용</h2>
+    <section style="margin-bottom: 20px">
+      <h3>1) .lazy 수식어 (change 이벤트 시점 반영)</h3>
+      <input type="text" v-model.lazy="lazyText" placeholder="입력 후 Enter 또는 외부 클릭" />
+      <p>
+        실시간이 아닌 확정된 값: <strong>{{ lazyText }}</strong>
+      </p>
+    </section>
+    <section style="margin-bottom: 20px">
+      <h3>2) .number 수식어 (Number 타입 자동 형변환)</h3>
+      <input type="text" v-model.number="age" placeholder="나이를 입력하세요" />
+      <p>
+        입력된 값: <strong>{{ age }}</strong>
+      </p>
+      <p>
+        데이터 타입: <strong>{{ typeof age }}</strong>
+      </p>
+    </section>
+    <section>
+      <h3>3) .trim 수식어 (양끝 공백 자동 제거)</h3>
+      <input type="text" v-model.trim="userEmail" placeholder="앞뒤 공백을 포함해 입력해 보세요" />
+      <p>
+        공백 제거된 값: <strong>"{{ userEmail }}"</strong>
+      </p>
+      <p>
+        문자열 길이: <strong>{{ userEmail.length }}</strong>
+      </p>
+    </section>
+    <section>
+      <h3>4) Chaining (수식어 체이닝: .trim.number)</h3>
+      <input type="text" v-model.trim.number="price" placeholder="공백과 숫자를 섞어 입력해 보세요" />
+      <p>
+        처리된 값: <strong>"{{ price }}"</strong>
+      </p>
+      <p>
+        데이터 타입: <strong>{{ typeof price }}</strong>
+      </p>
+    </section>
+  </div>
+</template> -->
+
+<!-- <script setup>
+// 자바스크립트 방은 깨끗하게 비워둡니다.
+</script>
+<template>
+  <div class="practice-section">
+    <h2>Scoped 스타일 및 외부 CSS 활용</h2>
+    <p class="title">이 글자는 이 컴포넌트 내부에서만 빨간색이 됩니다.</p>
+    <button class="btn-external">외부 CSS에서 불러온 버튼 스타일</button>
+  </div>
+</template>
+<style scoped>
+/* 내 방 전용 타이틀 디자인 */
+.title {
+  color: #ff7675;
+  font-weight: bold;
+  font-size: 18px;
+}
+</style> -->
+
+<!-- <script setup>
+import { ref } from 'vue'
+
+const weatherList = ref([
+  { id: 'city_01', name: '서울', temp: 28, status: '맑음', humidity: 60, wind: 2.5 },
+  { id: 'city_02', name: '수원', temp: 24, status: '비', humidity: 80, wind: 3.5 },
+  { id: 'city_03', name: '부산', temp: 26, status: '구름', humidity: 70, wind: 4.1 },
+])
+
+const searchCity = ref('')
+const selectedMessage = ref('카드를 클릭하거나 검색해 보세요.')
+
+const selectCity = (city) => {
+  selectedCityId.value = city.id
+  selectedMessage.value = `${city.name}이 선택되었습니다.`
+}
+
+const showDetail = ({ name, status }) => {
+  alert(`${name}의 현재 날씨는 [${status}] 상태입니다.`)
+}
+
+const toggleDetail = (cityId) => {
+  const { id, name, status } = city
+
+  alert(`${name}의 현재 날씨는 [${status}] 상태입니다.`)
+  if (detailCityId.value === cityId) {
+    detailCityId.value = ''
+  } else {
+    detailCityId.value = cityId
+  }
+}
+const selectedCityId = ref('')
+const detailCityId = ref('')
+</script>
+
+<template>
+  <div>
+    <h2>과제 1: 날씨 (Mockup)</h2>
+
+    <div>
+      <h3>도시 검색</h3>
+
+      <input v-model.trim="searchCity" placeholder="검색할 도시 이름 입력" />
+
+      <p>검색 중인 도시: {{ searchCity }}</p>
+    </div>
+
+    <div>
+      <h3>지역별 날씨 현황</h3>
+
+      <template v-for="city in weatherList" :key="city.id">
+        <div v-if="city.name.includes(searchCity)" @click="selectCity(city)" :class="{ hot: city.temp >= 25, cool: city.temp < 25, selected: selectedCityId === city.id }">
+          <strong>{{ city.name }}</strong>
+
+          <p>현재 기온: {{ city.temp }}℃</p>
+
+          <span v-if="city.temp >= 25"> 🔥 더움 (25도 이상) </span>
+
+          <span v-else> ❄️ 선선함 (25도 미만) </span>
+
+          <button @click.stop="toggleDetail(city)">상세보기</button>
+          <div v-show="detailCityId === city.id">
+            <p>날씨: {{ city.status }}</p>
+            <p>습도: {{ city.humidity }}%</p>
+            <p>풍속: {{ city.wind }}m/s</p>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <p>
+      {{ selectedMessage }}
+    </p>
+  </div>
+</template>
+
+<style scoped>
+.hot {
+  background-color: #ffe5e5;
+  border: 1px solid #ff6b6b;
+}
+
+.cool {
+  background-color: #e5f4ff;
+  border: 1px solid #4dabf7;
+}
+
+.selected {
+  outline: 3px solid black;
+  transform: scale(1.03);
+}
+</style> -->
+
+<!-- <script setup>
+import { ref } from 'vue'
+const count = ref(0)
+const name = ref('홍길동')
+const isActive = ref(true)
+const items = ref(['사과', '배'])
+const user = ref({ name: '이순신', age: 30 })
+const increaseRef = () => {
+  count.value++
+}
+const changeUserName = () => {
+  user.value.name = '장보고'
+}
+</script>
+
+<template>
+  <div class="practice-section">
+    <h2>반응형 상태 ref() 기초</h2>
+    <p>
+      Ref 카운트: <strong>{{ count }}</strong>
+    </p>
+    <p>이름: <input v-model="name" />{{ name }}</p>
+    <p>활성 상태: {{ isActive ? '활성' : '비활성' }}</p>
+    <p>과일 목록: {{ items.join(', ') }}</p>
+    <p>사용자 정보: 이름- {{ user.name }}, 나이- {{ user.age }}</p>
+    <button @click="increaseRef">Ref 변수 증가</button>
+    <button @click="isActive = !isActive">토글</button>
+    <button @click="items.push('귤')">과일 추가</button>
+    <button @click="changeUserName">사용자 이름 변경</button>
+  </div>
+</template> -->
+
+<!-- <script setup>
+import { reactive } from 'vue'
+const userReactive = reactive({ name: '이순신', age: 30 })
+const celebrateReactive = () => {
+  userReactive.age++
+}
+const items = reactive(['사과', '바나나'])
+const addItem = () => {
+  items.push(`과일 ${items.length + 1}`)
+}
+const removeItem = (index) => {
+  items.splice(index, 1)
+}
+</script>
+
+<template>
+  <div class="practice-section">
+    <h2>반응형 상태 reactive() 특징 및 주의점</h2>
+    <h3>1) 객체(Object) reactive</h3>
+    <p>이름: {{ userReactive.name }} / 나이: {{ userReactive.age }}세</p>
+    <button @click="celebrateReactive">reactive 나이 한 살 추가</button>
+    <h3>2) 배열(Array) reactive</h3>
+    <ul>
+      <li v-for="(item, index) in items" :key="index">
+        {{ item }}
+        <button @click="removeItem(index)" style="margin-left: 8px; padding: 2px 6px">삭제</button>
+      </li>
+    </ul>
+    <button @click="addItem">과일 항목 추가</button>
+  </div>
+</template> -->
+
+<!-- <script setup>
+import { ref, computed } from 'vue'
+const count = ref(0)
+const dummy = ref(0)
+
+const getMethodResult = () => {
+  console.log('❌ 일반 함수 실행됨!')
+  return count.value * 2
+}
+
+const doubleCount = computed(() => {
+  console.log('✅ Computed 연산 실행됨!')
+  return count.value * 2
+})
+</script>
+<template>
+  <div class="practice-section">
+    <h2>computed() 캐싱 동작 비교</h2>
+    <p>count: {{ count }} | dummy: {{ dummy }}</p>
+    <button @click="count++">count 증가 (의존성 변경)</button>
+    <button @click="dummy++">dummy 증가 (무관한 변경)</button>
+
+    <p>일반 함수 결과: {{ getMethodResult() }}</p>
+    <p>Computed 결과: {{ doubleCount }}</p>
+  </div>
+</template> -->
+
+<!-- <script setup>
+import { ref, watch } from 'vue'
+const currentCity = ref('서울')
+const logMessage = ref('아직 감시 시스템이 작동하지 않았습니다.')
+// currentCity 변수를 유심히 감시하는 watch 시스템 가동
+watch(currentCity, (newValue, oldValue) => {
+  // 값이 바뀌는 순간, 바뀐 알맹이(값) 두 개가 자동으로 주입됩니다.
+  logMessage.value = `📍 감시자 발동! [${oldValue}]에서 [${newValue}]로 변경됨.`
+  // 실무 활용처 시뮬레이션
+  console.log(`🤖 [서버 요청 완료] 기상청 서버에서 ${newValue}의 날씨 API를 다시 조회합니다...`)
+})
+</script>
+<template>
+  <div class="practice-section">
+    <h2>감시자 watch()의 원리와 실무 활용</h2>
+    <h3>🏙️ 지역 선택 제어판</h3>
+    <p>현재 선택된 도시: {{ currentCity }}</p>
+    <button @click="currentCity = '서울'">서울 선택</button> &nbsp; <button @click="currentCity = '수원'">수원 선택</button> &nbsp;
+    <button @click="currentCity = '부산'">부산 선택</button>
+    <div class="monitor">
+      <h3>👁️‍🗨️ 파수꾼(watch) 모니터링 시스템</h3>
+      <p>{{ logMessage }}</p>
+      <small style="color: gray">(버튼을 누른 후 브라우저 콘솔창 F12를 확인해 보세요)</small>
+    </div>
+  </div>
+</template> -->
+
+<!-- <script setup>
+import { ref, watch } from 'vue'
+const city = ref('서울')
+const dateType = ref('오늘')
+const apiStatus = ref('대기 중...')
+// 두 개의 ref 변수를 배열[] 형태로 묶어 동시에 감시합니다.
+watch([city, dateType], ([newCity, newDate], [oldCity, oldDate]) => {
+  apiStatus.value = `[변경 감지] ${oldCity}(${oldDate}) ➡️ ${newCity}(${newDate})`
+  // 실무 활용: 두 옵션 중 하나만 바뀌어도 통합 API 요청을 보냅니다.
+  console.log(`🤖 [통합 API 호출] ${newCity}의 ${newDate} 날씨를 불러옵니다...`)
+})
+</script>
+<template>
+  <div class="practice-section">
+    <h2>여러 개의 변수 동시 감시 (watch)</h2>
+    <h3>날씨 조건 설정</h3>
+    <label>도시: </label>
+    <select v-model="city">
+      <option value="서울">서울</option>
+      <option value="수원">수원</option>
+      <option value="부산">부산</option>
+    </select>
+    <label>날짜: </label>
+    <label><input type="radio" value="오늘" v-model="dateType" /> 오늘</label> &nbsp; <label><input type="radio" value="내일" v-model="dateType" /> 내일</label> &nbsp;
+    <label><input type="radio" value="주간예보" v-model="dateType" /> 주간예보</label>
+    <div class="monitor">
+      <h3>통합 모니터링 로그</h3>
+      <p>현재 상태: {{ apiStatus }}</p>
+    </div>
+  </div>
+</template> -->
+
+<!-- <script setup>
+import { ref, watch } from 'vue'
+const user = ref({
+  name: '홍길동',
+  age: 20,
+})
+const logDeep = ref('아직 반응 없음')
+const logTarget = ref('아직 반응 없음')
+// 실패하는 예시 (가장 많이 범하는 오류)
+// watch(user, () => { console.log('이 로그는 영원히 안 찍힙니다.') })
+// 해결책 1: deep 옵션을 켜서 객체 하위 속성 전체 감시하기
+watch(
+  user,
+  (newVal) => {
+    logDeep.value = `[deep 감지] 누군가 변경됨! 현재 이름: ${newVal.name}, 나이: ${newVal.age}`
+  },
+  { deep: true },
+)
+// 해결책 2: 화살표 함수로 특정 속성(age)만 콕 집어 감시하기 (★이전 값 추적 가능!)
+watch(
+  () => user.value.age,
+  (newAge, oldAge) => {
+    logTarget.value = `[타겟 감지] 나이가 ${oldAge}세 ➡️ ${newAge}세로 변경됨!`
+  },
+)
+</script>
+
+<template>
+  <div class="practice-section">
+    <h2>ref 객체/배열 감시</h2>
+    <h3>👨‍💻 회원 데이터 조작 panel</h3>
+    <p>이름: {{ user.name }} / 나이: {{ user.age }}세</p>
+    <button @click="user.name = '이순신'">이름만 변경</button> &nbsp;
+    <button @click="user.age++">나이만 변경 (age++)</button>
+    <div class="monitor">
+      <p>👁️‍🗨️ 1) deep: true 모니터 (전체 감시)</p>
+      <p>{{ logDeep }}</p>
+    </div>
+    <div class="monitor target">
+      <p>🎯 2) 화살표 함수 모니터 (나이만 타겟 감시)</p>
+      <p>{{ logTarget }}</p>
+    </div>
+  </div>
+</template> -->
+
+<!-- <script setup>
+import { reactive, ref, watch } from 'vue'
+// reactive로 선언한 묶음 상품 데이터
+const state = reactive({
+  productName: '노트북',
+  price: 1000,
+})
+const logAutoDeep = ref('대기 중...')
+const logTarget = ref('대기 중...')
+// 🟢 1) 변수명 그대로 감시 (자동 deep: true 작동)
+watch(state, (newVal, oldVal) => {
+  // newVal.price와 oldVal.price가 똑같이 2000으로 나옵니다!
+  logAutoDeep.value = `[자동 deep] 가격 변동! 이전가격인척하는:${oldVal.price}원 ➡️ 현재가격:${newVal.price}원`
+})
+// 🟢 2) 화살표 함수로 특정 속성만 감시 (이전 값 추적 가능!)
+watch(
+  () => state.price,
+  (newPrice, oldPrice) => {
+    // 🔥 특정 알맹이 값만 추출했으므로 진짜 과거 가격(1000)이 정상 보존됩니다.
+    logTarget.value = `[타겟 조준] 가격이 진짜 올랐음! 옛날값:${oldPrice}원 ➡️ 바뀐값:${newPrice}원`
+  },
+)
+</script>
+<template>
+  <div class="practice-section">
+    <h2>reactive() 데이터 watch 감시 규칙</h2>
+    <h3>🛒 상품 정보 관리 (reactive)</h3>
+    <p>상품명: {{ state.productName }} / 가격: {{ state.price }}원</p>
+    <button @click="state.price += 500">가격 500원 인상</button>
+    <div class="monitor auto">
+      <p>👁️‍🗨️ 1) state 변수 통째로 감시 (deep 자동화)</p>
+      <p>{{ logAutoDeep }}</p>
+      <small>※ 주의: 이전 값과 현재 값이 똑같이 찍힌다.</small>
+    </div>
+    <div class="monitor target">
+      <p>🎯 2) () => state.price 콕 집어 감시 (과거 추적)</p>
+      <p>{{ logTarget }}</p>
+      <small>※ 성공: 과거의 원본 가격이 칼같이 보존된다.</small>
+    </div>
+  </div>
+</template> -->
+
+watchEffect() Example
+<script setup>
+import { ref, watchEffect } from 'vue'
+const username = ref('홍길동')
+const age = ref(20)
+const logMessage = ref('대기 중...')
+// watchEffect 가동: 감시 대상을 지정하는 파라미터가 없습니다!
+watchEffect(() => {
+  // Vue가 이 내부 코드를 읽고 'username'과 'age'를 자동으로 감시 리스트에 등록합니다.
+  logMessage.value = `[자동 감지] 이름: ${username.value} / 나이: ${age.value}세`
+  // 화면이 처음 켜질 때 1등으로 즉시 실행되는 증거를 콘솔에서 확인합니다.
+  console.log('🤖 watchEffect가 내부 변수 변경을 감지하여 실행되었습니다.')
+})
+</script>
+<template>
+  <div class="practice-section">
+    <h2>자동 감시자 watchEffect()</h2>
+    <p>이름: {{ username }} / 나이: {{ age }}세</p>
+    <button @click="username = '이순신'">이름을'이순신'으로 변경</button> &nbsp;
+    <button @click="age++">나이 한 살 추가 (age++)</button>
+    <div class="monitor">
+      <h3>👁️‍🗨️ watchEffect 자동 모니터링 시스템</h3>
+      <p>{{ logMessage }}</p>
+      <small style="color: gray">※ 새로고침하자마자 버튼을 안 눌러도 로그가 이미 찍혀있는 특징을 주목하세요!</small>
+    </div>
+  </div>
+</template>

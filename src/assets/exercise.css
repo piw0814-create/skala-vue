@@ -109,7 +109,7 @@ input {
   padding: 4px 8px;
   font-size: 12px;
   border-radius: 4px;
-  color: #fff;
+  color: oklch(99.115% 0.00423 15.765);
 }
 .hot {
   background-color: #ff7675;
@@ -131,4 +131,25 @@ input {
   color: #2e7d32;
   font-weight: bold;
   border-radius: 6px;
+}
+
+.weather-card.selected {
+  outline: 3px solid #333;
+  transform: scale(1.02);
+}
+
+.detail-box {
+  margin-top: 12px;
+  padding: 10px;
+  border-top: 1px solid #ccc;
+}
+.heat-warning {
+  font-weight: bold;
+  color: #d32f2f;
+}
+.hottest-city-box {
+  padding: 12px;
+  margin-bottom: 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
 }

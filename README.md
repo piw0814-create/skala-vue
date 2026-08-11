@@ -1,128 +1,62 @@
-# DAY1 실습 요약
+따로 하고있는 프로젝트 포트번호랑 겹쳐서 포트번호를 3001번으로 했습니다.
 
-- {{ 변수 }}
-  → HTML 태그 "내용"에 연결
+node*modules 디렉터리는 꼭 제거
+울산4반\_Vue_2일차*종합실습제출\_박인우.zip
+리드미, 스냅샷
 
-- v-text="변수"
-  → HTML 태그 "내용"에 연결
+# 실습1. Weather Mockup(WeatherMockup.vue 수정)
 
-- v-html="변수"
-  → HTML 태그 "내용"을 HTML로 연결
+1. 배열 렌더링 : v-for 이용, 임의의 날씨 데이터 배열을 활용해 화면에 날씨 카드를 반복 출력한다.key='city.id'
+2. 조건부 렌더링 : v-if이용, 온도에 따라 라벨 붙이기
+3. 양방향 바인딩 및 한글처리 : :value, @input이용, 도시 이름을 한글로 검색하는 input이용
+4. 이벤트 및 수식어 :
 
-- :속성="변수" (v-bind)
-  → HTML 태그의 "속성"에 연결
+- 지역별 날씨 현황 카드를 누르면 상태바에 “{도시}이 선택되었습니다.” 표기
+- 지역별 날씨 현황 카드 내부의 [상세보기] 버튼을 누르면 버블링 없이 해당 도시의 날씨 내용을 window.alert로 띄운다.
+- ref('')를 만든뒤 v-model로 양방향 연결
 
-- :class는 CSS 자체를 바꾸는 게 아니라, Vue 상태에 따라 어떤 CSS 클래스 이름을 HTML 요소에 적용할지 결정한다.
+5. 본인만의 데이터 추가하고 이를 기초로 목업 추가
 
-- :href="url"
-  → href 속성을 상태와 연결
+- 도시검색 필터
+  - v-model.trim으로 검색어를 입력받음.
+  - v-if="city.name.includes(searchCity)"를 이용하여 검색어가 포함된 도시만 화면에 표시.
+  - 검색어가 변경되면 Vue의 반응형 상태에 따라 화면도 자동으로 변경 확인.
+    ![alt text](image-1.png)
+- 선택된 카드 강조
+  - 현재 선택된 도시의 ID를 selectedCityId에 저장.
+  - 카드를 클릭하면 선택한 도시 ID와 상태 문구를 변경.
+  - 현재 카드의 ID와 selectedCityId가 같으면 selected 클래스를 추가하여 CSS로 강조.
+    ![alt text](image-2.png)
 
-- :disabled="isDisabled"
-  → disabled 속성을 상태와 연결
+- 상세정보 펼치기/접기
+  - detailCityId에 현재 상세정보가 열린 도시 ID를 저장.
+  - toggleDetail() 함수에서 같은 카드를 다시 누르면 닫고, 다른 카드를 누르면 해당 도시의 상세정보를 표시.
+  - v-show를 이용해 상세정보 영역의 표시 여부를 제어.
+    ![alt text](image-3.png)
 
-- :class="{ active: isActive }"
-  → class 속성을 상태와 연결
+# 실습2. Weather Composition (WeatherComposition.vue 파일 수정)
 
-- :style은 CSS 속성값 자체를 Vue 데이터로 직접 넣는 방식
+1. 반응형 상태 3개 만들기
+2. 검색 도시 (computed 활용)
+3. 반응형 변수 변화 감시 (watch, watchEffect)
+4. 검색 결과 표시 (Template 영역)
 
-- :class
-  → CSS 클래스 이름을 동적으로 붙임
-  → .text-danger 같은 미리 정의된 CSS 사용
+5. 본인만의 반응형 상태 변수, Computed, Watcher를 추가한다.
 
-- :style
-  → CSS 속성값을 직접 동적으로 넣음
-  → color, fontSize 등을 바로 설정
+- 체감온도 및 기상 경고 기능 추가
+  - weatherList의 기온·습도·풍속 데이터를 기반으로 computed()에서 도시별 체감온도를 계산하고, 실제 기온과 함께 화면에 표시. 사용자가 설정한 체감온도 경고 기준은 ref()로 관리하고, watch()를 이용해 기준값 변경 시 후속 로그를 출력
 
-- v-if, v-else-if, v-else
+        체감온도 AT = 기온 + 0.33 × 수증기압 - 0.70 × 풍속 - 4 으로 대충 계산
 
-- v-show
+        → 체감온도 경고 기준
+        예: 30℃
 
-- v-for
-  ````text
-  ▪ 배열 렌더링:
-  • <div v-for="(item, index) in items" :key="고유값"></div>
-  • <div v-for="item in items" :key="고유값"></div>
-  ▪ 객체 렌더링:
-  • <div v-for="(value, key, index) in object" :key="고유값"></div>
-  • <div v-for="(value, key) in object" :key="고유값"></div>
-  • <div v-for="value in object" :key="고유값"></div>
-  ```text
-  ````
+        computed
+        → 각 도시의 체감온도 계산
+        → 체감온도가 가장 높은 도시 계산
 
-# DAY1 궁금한점
+        watch
+        → 경고 기준이 변경되면 로그 출력
+        → 각 도시의 체감온도가 사용자가 설정한 경고 기준 이상이면 v-if를 이용해 경고 메시지 표시
 
-- 화살표 함수는 자기 자신의 this를 만들지 않아서, 객체 자기 자신을 this로 접근하는 메서드에는 보통 일반 메서드 문법을 쓰는 게 좋다.
-  반면 Vue의 <script setup>에서는 객체의 this를 사용할 일이 거의 없어서 화살표 함수로 함수/이벤트 핸들러를 만드는 방식이 아주 자주 나옴
-
-- v-for에서 키 사용 이유
-
-`v-for`에서 고유값인 `:key`가 필요한 이유는 **Vue가 반복된 각 항목을 서로 구분하기 위해서**다
-
-예를 들어:
-
-```vue
-<li v-for="item in items" :key="item.id">
-  {{ item.name }}
-</li>
-```
-
-여기서 Vue는:
-
-```text
-id=101 → 아이폰
-id=102 → 갤럭시
-id=103 → 픽셀
-```
-
-처럼 각 `<li>`가 어떤 데이터와 연결된 요소인지 기억.
-
-이게 중요한 건 배열이 바뀔 때. 예를 들어:
-
-```text
-처음
-101 아이폰
-102 갤럭시
-103 픽셀
-```
-
-여기서 `102 갤럭시`를 삭제하면 Vue는 `key`를 보고:
-
-```text
-101은 그대로
-102는 삭제
-103은 그대로
-```
-
-라고 정확하게 판단.
-
-`key`가 없으면 Vue는 단순히 **현재 위치를 기준으로 DOM을 재사용**하려고 해서, 입력창이나 컴포넌트 내부 상태가 있는 경우 엉뚱한 항목의 상태가 남을 수 있다.
-
-그래서:
-
-```vue
-:key="item.id"
-```
-
-는 Vue에게
-
-> “이 HTML 요소의 신분증은 `item.id`”
-
-라고 알려주는 것과 비슷.
-
-그리고 가능하면:
-
-```vue
-:key="index"
-```
-
-보다는:
-
-```vue
-:key="item.id"
-```
-
-를 쓰는 게 좋다. `index`는 항목을 삭제하거나 순서를 바꾸면 값이 달라질 수 있지만, `item.id`는 데이터 자체의 고유값이라 안정적이기 때문.
-
-한 줄 정리하면:
-
-> **`:key`는 Vue가 `v-for`로 만들어진 각각의 DOM/컴포넌트를 정확히 식별해서 추가·삭제·순서변경 때 올바르게 재사용하기 위해 필요하다.**
+  ![alt text](image-4.png)

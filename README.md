@@ -200,10 +200,10 @@
 
 - weatherStore 추가 및 날씨 데이터 통합
 - 공통 상태와 공통 계산 로직을 Store로 이동하여 View 간 데이터 중복을 제거하고, 각 View는 필요한 Store 데이터를 가져와 화면 표시와 페이지별 기능에 집중하도록 구성하였다.
-  - state
+  - **state**
     - weatherList
     - feelsLikeThreshold
-  - getters
+  - **getters**
     - weatherWithFeelsLike : 각 도시의 체감온도 계산
     - hottestFeelsLikeCity : 최고 체감온도 도시
     - warningCities : 경고 기준 이상 도시 목록
@@ -214,9 +214,9 @@
     - averageWind : 평균 풍속
     - hottestCity : 최고 기온 도시
     - coldestCity : 최저 기온 도시
-  - actions
+  - **actions**
     - updateThreshold() : 체감온도 경고 기준 변경
-    - stores/weatherStore.js 생성
+  - stores/weatherStore.js 생성
   - state에 weatherList, feelsLikeThreshold 저장
   - getters에 체감온도 계산, 최고 체감온도 도시, 경고 도시 목록, 도시 ID 조회 기능 작성
   - action으로 체감온도 경고 기준 변경 처리

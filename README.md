@@ -248,3 +248,25 @@
 
 - 다른 view파일 모든 온도 표시를 formatTemp()로 통일
   ![alt text](image-8.png) ![alt text](image-9.png)
+
+## 추가 기능 추가 : 즐겨찾기 체크박스 및 목록
+
+- 도시 즐겨찾기 기능 추가
+  - 기존에 학습한 checkbox를 활용해 각 WeatherCard에서 도시 즐겨찾기 선택/해제가 가능하도록 구현
+  - WeatherCard.vue에 favorite Prop을 추가하여 부모에서 현재 즐겨찾기 여부 전달
+  - 체크박스 변경 시 toggle-favorite Emit으로 도시 ID를 WeatherHomeView에 전달
+  - WeatherHomeView.vue에서 Emit을 받아 weatherStore.toggleFavorite(cityId) Action 호출
+  - weatherStore의 state에 favoriteCityIds를 추가하여 즐겨찾기 도시 ID를 전역 상태로 관리
+  - getter에 favoriteCities를 추가하여 전체 도시 중 즐겨찾기된 도시만 필터링
+  - action의 toggleFavorite()에서 push() / splice()를 이용해 즐겨찾기 추가·해제 처리
+  - Store 상태 변경 시 favoriteCities Getter가 자동 재계산되는 Pinia의 반응형 흐름 활용
+  - WeatherHomeView.vue에 activeTab을 ref()로 관리하여 전체 도시 / 즐겨찾기 탭 구현
+  - 즐겨찾기 탭에서도 기존 WeatherCard 컴포넌트를 재사용하여 중복 UI 코드 최소화
+  - 즐겨찾기 탭에서 체크 해제 시 Store 상태와 Getter가 갱신되어 해당 카드가 즉시 목록에서 제거
+  - 체크박스에 @click.stop을 적용하여 체크 시 WeatherCard의 부모 클릭 이벤트까지 발생하는 이벤트 버블링 방지
+  - 즐겨찾기와 상세보기 기능을 카드 우측 상단에 배치하도록 UI 수정
+  - 전역 input CSS가 checkbox에도 적용되던 문제를 input:not([type='checkbox'])로 분리하여 해결
+
+  - 동작 흐름: 체크박스 선택 → WeatherCard Emit → WeatherHomeView 이벤트 처리 → weatherStore Action → favoriteCityIds 변경 → favoriteCities Getter 재계산 → 즐겨찾기 탭 자동 갱신
+
+![alt text](image-10.png)

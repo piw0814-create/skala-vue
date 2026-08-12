@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 
 const goHome = () => {
-  router.push({ name: 'WeatherHome' })
+  router.push('/')
 }
 </script>
 

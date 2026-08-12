@@ -43,6 +43,8 @@ export const useWeatherStore = defineStore('weather', {
     ],
 
     feelsLikeThreshold: 30,
+    // 즐겨찾기 도시 ID
+    favoriteCityIds: [],
   }),
 
   // state를 이용해서 계산한 값
@@ -104,12 +106,24 @@ export const useWeatherStore = defineStore('weather', {
     coldestCity: (state) => {
       return state.weatherList.reduce((current, city) => (city.temp < current.temp ? city : current))
     },
+    favoriteCities() {
+      return this.weatherWithFeelsLike.filter((city) => this.favoriteCityIds.includes(city.id))
+    },
   },
 
   // state 변경
   actions: {
     updateThreshold(value) {
       this.feelsLikeThreshold = Number(value)
+    },
+    toggleFavorite(cityId) {
+      const index = this.favoriteCityIds.indexOf(cityId)
+
+      if (index === -1) {
+        this.favoriteCityIds.push(cityId)
+      } else {
+        this.favoriteCityIds.splice(index, 1)
+      }
     },
   },
 })

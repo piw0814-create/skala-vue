@@ -32,15 +32,20 @@ const searchQuery = ref('')
 const selectedCityId = ref('')
 const selectedCityInfo = ref('카드를 클릭해 보세요.')
 
+// 현재 도시 목록 탭
+const activeTab = ref('all')
+
 // =========================
 // 현재 View에서만 필요한 computed
 // =========================
 
-// 검색 결과
-const filteredWeatherList = computed(() => {
+// 현재 탭 + 검색어에 따라 표시할 도시 목록
+const displayedWeatherList = computed(() => {
   const query = searchQuery.value.trim()
 
-  const filteredList = weatherStore.weatherWithFeelsLike.filter((city) => city.name.includes(query))
+  const sourceList = activeTab.value === 'favorite' ? weatherStore.favoriteCities : weatherStore.weatherWithFeelsLike
+
+  const filteredList = sourceList.filter((city) => city.name.includes(query))
 
   return filteredList
 })
@@ -65,6 +70,16 @@ const selectCity = (city) => {
   selectedCityInfo.value = `${city.name}이 선택되었습니다.`
 }
 
+// 즐겨찾기 체크/해제
+const handleToggleFavorite = (cityId) => {
+  weatherStore.toggleFavorite(cityId)
+}
+
+// 도시 목록 탭 변경
+const changeTab = (tab) => {
+  activeTab.value = tab
+}
+
 // 상세 페이지 이동
 const goToDetail = (city) => {
   router.push('/weather/' + city.id)
@@ -79,7 +94,7 @@ watch(selectedCityInfo, (newValue, oldValue) => {
 })
 
 watchEffect(() => {
-  console.log(`[watchEffect 자동 호출] 현재 검색어: "${searchQuery.value}" / 매칭 도시 수: ${filteredWeatherList.value.length}`)
+  console.log(`[watchEffect 자동 호출] 현재 검색어: "${searchQuery.value}" / 매칭 도시 수: ${displayedWeatherList.value.length}`)
 })
 
 watch(
@@ -115,19 +130,31 @@ watch(
 
       <h3>🏙️ 지역별 날씨 현황</h3>
 
+      <!-- 전체 / 즐겨찾기 탭 -->
+      <div class="weather-tabs">
+        <button class="tab-button" :class="{ active: activeTab === 'all' }" @click="changeTab('all')">🏙️ 전체 도시</button>
+
+        <button class="tab-button" :class="{ active: activeTab === 'favorite' }" @click="changeTab('favorite')">⭐ 즐겨찾기 ({{ weatherStore.favoriteCities.length }})</button>
+      </div>
+
+      <!-- 즐겨찾기 없음 -->
+      <p v-if="activeTab === 'favorite' && weatherStore.favoriteCities.length === 0" class="no-result">⭐ 즐겨찾기한 도시가 없습니다.</p>
+
+      <!-- 검색 결과 없음 -->
+      <p v-else-if="searchQuery !== '' && displayedWeatherList.length === 0" class="no-result">검색 결과가 일치하는 도시가 없습니다.</p>
+
       <!-- 도시별 날씨 카드 -->
       <WeatherCard
-        v-for="city in filteredWeatherList"
+        v-for="city in displayedWeatherList"
         :key="city.id"
         :city-item="city"
         :selected="selectedCityId === city.id"
+        :favorite="weatherStore.favoriteCityIds.includes(city.id)"
         :feels-like-threshold="weatherStore.feelsLikeThreshold"
         @select-card="selectCity"
         @click-detail="goToDetail"
+        @toggle-favorite="handleToggleFavorite"
       />
-
-      <!-- 검색 결과 없음 -->
-      <p v-if="searchQuery !== '' && filteredWeatherList.length === 0" class="no-result">검색 결과가 일치하는 도시가 없습니다.</p>
     </BaseDashboardCard>
 
     <!-- 선택 상태 -->
@@ -144,6 +171,37 @@ watch(
   text-align: center;
   color: #2e7d32;
   font-weight: bold;
+  border-radius: 6px;
+}
+
+/* 전체 / 즐겨찾기 탭 */
+.weather-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.tab-button {
+  padding: 8px 14px;
+  background: #f1f2f6;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.tab-button.active {
+  background: #2c3e50;
+  color: white;
+  font-weight: bold;
+}
+
+.no-result {
+  padding: 15px;
+  text-align: center;
+  color: #777;
+  background: #f8f9fa;
   border-radius: 6px;
 }
 </style>

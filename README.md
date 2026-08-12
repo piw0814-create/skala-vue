@@ -164,7 +164,7 @@
               ┌─────────┴─────────┐
               ↓                   ↓
 
-  WeatherHomeView WeatherDetailView
+        WeatherHomeView   WeatherDetailView
 
 - WeatherStatsView (날씨 통계/평균)
   - router/index.js에 /stats 추가
@@ -241,10 +241,10 @@
   - formatTemp(temp)로 변환된 숫자와 ℃ / ℉ 단위를 함께 반환
   - 원본 weatherStore 데이터는 계속 섭씨 기준으로 유지하고, 화면 표시 시에만 변환
 
-  useTemperature()
-  ├─ configStore 사용
-  ├─ convertTemp() → 숫자 변환
-  └─ formatTemp() → 숫자 + 단위 표시
+    useTemperature()
+    ├─ configStore 사용
+    ├─ convertTemp() → 숫자 변환
+    └─ formatTemp() → 숫자 + 단위 표시
 
 - 다른 view파일 모든 온도 표시를 formatTemp()로 통일
   ![alt text](image-8.png) ![alt text](image-9.png)

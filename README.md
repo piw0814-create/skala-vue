@@ -269,4 +269,4 @@
 
   - 동작 흐름: 체크박스 선택 → WeatherCard Emit → WeatherHomeView 이벤트 처리 → weatherStore Action → favoriteCityIds 변경 → favoriteCities Getter 재계산 → 즐겨찾기 탭 자동 갱신
 
-![alt text](image-10.png)
+  ![alt text](image-10.png)

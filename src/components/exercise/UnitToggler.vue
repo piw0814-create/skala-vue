@@ -21,5 +21,6 @@ const configStore = useConfigStore()
   border-radius: 4px;
   cursor: pointer;
   font-weight: bold;
+  white-space: nowrap;
 }
 </style>

@@ -1,25 +1,59 @@
 <script setup>
-// 1. 상위로부터 단방향 주입받을 객체 데이터 규격 검수 (매크로)
+import { useTemperature } from '@/composables/useTemperature'
+
 defineProps({
   cityItem: {
     type: Object,
     required: true,
   },
+
+  selected: {
+    type: Boolean,
+    default: false,
+  },
+
+  feelsLikeThreshold: {
+    type: Number,
+    default: 30,
+  },
 })
 
-// 2. 상위로 송신할 두 가지 경로의 커스텀 이벤트 식별자 등록 (매크로)
 const emit = defineEmits(['select-card', 'click-detail'])
+
+// 온도를 현재 설정 단위로 변환
+const { formatTemp } = useTemperature()
 </script>
 
 <template>
-  <div class="weather-card" @click="emit('select-card', `${cityItem.name}이 선택되었습니다.`)">
-    <h4>{{ cityItem.name }} ({{ cityItem.status }})</h4>
-    <p>현재 기온: {{ cityItem.temp }}°C</p>
+  <div
+    class="weather-card"
+    :class="{
+      selected: selected,
+    }"
+    @click="emit('select-card', cityItem)"
+  >
+    <h4>
+      {{ cityItem.name }}
+      ({{ cityItem.status }})
+    </h4>
 
-    <span v-if="cityItem.temp >= 25" class="badge hot">🔥 더움</span>
-    <span v-else class="badge cool">❄️ 선선함</span>
+    <p>
+      현재 기온:
+      {{ formatTemp(cityItem.temp) }}
+    </p>
 
-    <button class="btn-detail" @click.stop="emit('click-detail', cityItem.name, cityItem.status)">상세보기</button>
+    <span v-if="cityItem.temp >= 25" class="badge hot"> 🔥 더움 ({{ formatTemp(25) }} 이상) </span>
+
+    <span v-else class="badge cool"> ❄️ 선선함 ({{ formatTemp(25) }} 미만) </span>
+
+    <p class="feels-like">
+      🌡️ 체감온도:
+      {{ formatTemp(cityItem.feelsLike) }}
+    </p>
+
+    <p v-if="cityItem.feelsLike >= feelsLikeThreshold" class="heat-warning">🚨 체감온도가 경고 기준 이상입니다.</p>
+
+    <button class="btn-detail" @click.stop="emit('click-detail', cityItem)">상세보기</button>
   </div>
 </template>
 
@@ -33,6 +67,7 @@ const emit = defineEmits(['select-card', 'click-detail'])
   cursor: pointer;
   position: relative;
 }
+
 .badge {
   display: inline-block;
   padding: 4px 8px;
@@ -40,17 +75,32 @@ const emit = defineEmits(['select-card', 'click-detail'])
   border-radius: 4px;
   color: #fff;
 }
+
 .hot {
   background-color: #ff7675;
 }
+
 .cool {
   background-color: #74b9ff;
 }
+
+.feels-like {
+  margin-top: 10px;
+}
+
 .btn-detail {
   position: absolute;
   right: 12px;
   top: 15px;
   padding: 6px 10px;
   cursor: pointer;
+}
+
+.weather-card.selected {
+  border: 2px solid #333;
+}
+
+.heat-warning {
+  font-weight: bold;
 }
 </style>

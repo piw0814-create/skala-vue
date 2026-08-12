@@ -1,61 +1,139 @@
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { ref, computed, watch, watchEffect } from 'vue'
+import { useRouter } from 'vue-router'
 
-import BaseDashboardCard from '../components/exercise/BaseDashboardCard.vue'
-import SearchBar from '../components/exercise/SearchBar.vue'
-import WeatherCard from '../components/exercise/WeatherCard.vue'
+import { useWeatherStore } from '@/stores/weatherStore'
+import { useTemperature } from '@/composables/useTemperature'
 
+import BaseDashboardCard from '@/components/exercise/BaseDashboardCard.vue'
+import SearchBar from '@/components/exercise/SearchBar.vue'
+import WeatherCard from '@/components/exercise/WeatherCard.vue'
+import FeelsLikeThreshold from '@/components/exercise/FeelsLikeThreshold.vue'
+import HottestCity from '@/components/exercise/HottestCity.vue'
+import HeatWarningList from '@/components/exercise/HeatWarningList.vue'
+
+// Router
 const router = useRouter()
-const route = useRoute()
 
-const weatherList = ref([
-  { id: 'city_01', name: '서울', temp: 28, status: '맑음' },
-  { id: 'city_02', name: '수원', temp: 24, status: '비' },
-  { id: 'city_03', name: '부산', temp: 26, status: '구름' },
-])
+// Pinia Store
+const weatherStore = useWeatherStore()
 
+// 온도 변환 Composable
+const { formatTemp } = useTemperature()
+
+// =========================
+// 현재 View에서만 사용하는 상태
+// =========================
+
+// 검색어
 const searchQuery = ref('')
-const selectedCityInfo = ref('카드를 클릭하거나 검색해 보세요.')
 
-// 초기 마운트 시 주소창의 쿼리(?search=) 스트링 읽어서 상태 복원 (KeepAlive를 적용해야만 동작함)
-onMounted(() => {
-  if (route.query.search) {
-    searchQuery.value = route.query.search
-  }
-})
+// 선택한 도시
+const selectedCityId = ref('')
+const selectedCityInfo = ref('카드를 클릭해 보세요.')
 
-// 타이핑될 때마다 주소창의 쿼리 스트링 값을 실시간 푸시 개편 (현재 큰 의미없음)
-watch(searchQuery, (newQuery) => {
-  router.push({
-    path: route.path,
-    query: { search: newQuery || undefined },
-  })
-})
+// =========================
+// 현재 View에서만 필요한 computed
+// =========================
 
+// 검색 결과
 const filteredWeatherList = computed(() => {
   const query = searchQuery.value.trim()
-  if (!query) return weatherList.value
-  return weatherList.value.filter((item) => item.name.includes(query))
+
+  const filteredList = weatherStore.weatherWithFeelsLike.filter((city) => city.name.includes(query))
+
+  return filteredList
 })
 
-// 자식 카드 컴포넌트의 상세보기 신호를 받으면 해당 ID 주소로 라우터 점프 실행
-const handleDetailJump = (id) => {
-  router.push(`/weather/${id}`)
+// =========================
+// 이벤트 처리
+// =========================
+
+// SearchBar에서 emit된 값 처리
+const updateQuery = (value) => {
+  searchQuery.value = value.trim()
 }
+
+// FeelsLikeThreshold에서 emit된 값 처리
+const updateThreshold = (value) => {
+  weatherStore.updateThreshold(value)
+}
+
+// WeatherCard 선택
+const selectCity = (city) => {
+  selectedCityId.value = city.id
+  selectedCityInfo.value = `${city.name}이 선택되었습니다.`
+}
+
+// 상세 페이지 이동
+const goToDetail = (city) => {
+  router.push('/weather/' + city.id)
+}
+
+// =========================
+// watch
+// =========================
+
+watch(selectedCityInfo, (newValue, oldValue) => {
+  console.log(`[watch 감지] 상태 바 문구가 업데이트되었습니다: "${oldValue}" → "${newValue}"`)
+})
+
+watchEffect(() => {
+  console.log(`[watchEffect 자동 호출] 현재 검색어: "${searchQuery.value}" / 매칭 도시 수: ${filteredWeatherList.value.length}`)
+})
+
+watch(
+  () => weatherStore.feelsLikeThreshold,
+  (newValue, oldValue) => {
+    console.log(`⚠️ 체감온도 경고 기준이 ${oldValue}℃에서 ${newValue}℃로 변경되었습니다.`)
+  },
+)
 </script>
 
 <template>
   <div class="dashboard-wrapper">
+    <!-- 검색 -->
     <BaseDashboardCard>
-      <SearchBar :current-query="searchQuery" @update-query="(val) => (searchQuery = val)" />
+      <SearchBar :current-query="searchQuery" @update-query="updateQuery" />
     </BaseDashboardCard>
 
+    <!-- 체감온도 경고 기준 -->
     <BaseDashboardCard>
-      <h3>🏙️ 지역별 날씨 현황</h3>
-      <WeatherCard v-for="item in filteredWeatherList" :key="item.id" :city-item="item" @select-card="(msg) => (selectedCityInfo = msg)" @click-detail="handleDetailJump(item.id)" />
+      <FeelsLikeThreshold :threshold="weatherStore.feelsLikeThreshold" @update-threshold="updateThreshold" />
     </BaseDashboardCard>
-    <div class="status-bar">{{ selectedCityInfo }}</div>
+
+    <!-- 날씨 목록 -->
+    <BaseDashboardCard>
+      <!-- 체감온도 최고 도시 -->
+      <HottestCity :city="weatherStore.hottestFeelsLikeCity" />
+
+      <!-- 체감온도 경고 도시 -->
+      <HeatWarningList :cities="weatherStore.warningCities" :threshold="weatherStore.feelsLikeThreshold">
+        <!-- Scoped Slot 사용 -->
+        <template #default="{ city }"> 🚨 {{ city.name }} - 체감 {{ formatTemp(city.feelsLike) }} / 실제 {{ formatTemp(city.temp) }} </template>
+      </HeatWarningList>
+
+      <h3>🏙️ 지역별 날씨 현황</h3>
+
+      <!-- 도시별 날씨 카드 -->
+      <WeatherCard
+        v-for="city in filteredWeatherList"
+        :key="city.id"
+        :city-item="city"
+        :selected="selectedCityId === city.id"
+        :feels-like-threshold="weatherStore.feelsLikeThreshold"
+        @select-card="selectCity"
+        @click-detail="goToDetail"
+      />
+
+      <!-- 검색 결과 없음 -->
+      <p v-if="searchQuery !== '' && filteredWeatherList.length === 0" class="no-result">검색 결과가 일치하는 도시가 없습니다.</p>
+    </BaseDashboardCard>
+
+    <!-- 선택 상태 -->
+    <div class="status-bar">
+      {{ selectedCityInfo }}
+    </div>
   </div>
 </template>
 

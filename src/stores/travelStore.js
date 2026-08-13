@@ -9,6 +9,18 @@ const AIR_QUALITY_URL = 'https://air-quality-api.open-meteo.com/v1/air-quality'
 const OPENWEATHER_FORECAST_URL = 'https://api.openweathermap.org/data/2.5/forecast'
 const OPENWEATHER_AIR_URL = 'https://api.openweathermap.org/data/2.5/air_pollution/forecast'
 const REQUEST_TIMEOUT = 10000
+const OPENWEATHER_ATMOSPHERE_CODE_MAP = {
+  701: 10,
+  711: 4,
+  721: 5,
+  731: 7,
+  741: 45,
+  751: 7,
+  761: 6,
+  762: 4,
+  771: 18,
+  781: 19,
+}
 
 const getTravelErrorMessage = (error) => {
   if (error.code === 'MISSING_OPENWEATHER_API_KEY') {
@@ -102,11 +114,19 @@ const convertOpenWeatherCode = (weatherCode) => {
   }
 
   if (weatherCode >= 600 && weatherCode < 700) {
+    if (weatherCode === 602) {
+      return 75
+    }
+
+    if (weatherCode === 622) {
+      return 86
+    }
+
     return 71
   }
 
   if (weatherCode >= 700 && weatherCode < 800) {
-    return 45
+    return OPENWEATHER_ATMOSPHERE_CODE_MAP[weatherCode] ?? 0
   }
 
   if (weatherCode === 800) {

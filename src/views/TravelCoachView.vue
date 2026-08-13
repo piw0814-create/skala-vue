@@ -359,6 +359,8 @@ onMounted(() => {
             <span>강수: 시간대별 확률 60% 또는 제공 예보 구간 누적 5mm부터 주의</span>
             <span>돌풍: 여행 유형별 8~12m/s부터 주의</span>
             <span>체감온도: 30℃ 이상 또는 0℃ 이하부터 주의</span>
+            <span>가시거리: 운전 2km·기타 활동 1km 미만 또는 안개 예보부터 앱 주의 · 500m 미만 시야 위험</span>
+            <span>눈: 눈 예보부터 주의 · 운전 2cm·기타 활동 5cm 이상 또는 강한 눈 예보 시 위험</span>
             <span>자외선: 6 이상 주의 · 8 이상 위험</span>
             <span v-if="travelStore.selectedForecast?.provider === 'openweather'">OpenWeather 대기질: 4/5단계부터 주의 · 5/5단계 높은 위험</span>
             <span v-else>미국 AQI: 101 이상 주의 · 151 이상 높은 위험</span>

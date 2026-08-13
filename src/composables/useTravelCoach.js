@@ -4,7 +4,9 @@ import { formatNumber } from '@/utils/numberFormat'
 
 const THUNDERSTORM_CODES = [95, 96, 99]
 const SNOW_CODES = [71, 73, 75, 77, 85, 86]
+const HEAVY_SNOW_CODES = [75, 86]
 const FOG_CODES = [45, 48]
+const DANGEROUS_VISIBILITY = 500
 
 const WIND_THRESHOLDS = {
   'city-tour': { caution: 10, danger: 15 },
@@ -30,6 +32,11 @@ const getMax = (values) => {
 const getMin = (values) => {
   const numbers = getNumbers(values)
   return numbers.length > 0 ? Math.min(...numbers) : null
+}
+
+const getSum = (values) => {
+  const numbers = getNumbers(values)
+  return numbers.length > 0 ? numbers.reduce((sum, value) => sum + value, 0) : null
 }
 
 const getPeakHour = (hours, getValue, direction = 'max') => {
@@ -307,35 +314,49 @@ export const analyzeTravelRisks = (day, hours, travelType) => {
   const minVisibility = getMin(hours.map((hour) => hour.visibility))
   const visibilityPeak = getPeakHour(hours, (hour) => hour.visibility, 'min')
   const hasFogCode = hours.some((hour) => FOG_CODES.includes(hour.weatherCode))
-  const visibilityCaution = travelType === 'drive' ? 5000 : 3000
+  const visibilityCaution = travelType === 'drive' ? 2000 : 1000
+  const hasLowVisibility = Number.isFinite(minVisibility) && minVisibility < visibilityCaution
 
-  if (hasFogCode || (Number.isFinite(minVisibility) && minVisibility <= visibilityCaution)) {
-    const level = Number.isFinite(minVisibility) && minVisibility <= 1000 ? 'danger' : 'caution'
+  if (hasFogCode || hasLowVisibility) {
+    const level = Number.isFinite(minVisibility) && minVisibility < DANGEROUS_VISIBILITY ? 'danger' : 'caution'
+    const isVisibilityRiskHour = (hour) => {
+      if (level === 'danger') {
+        return Number.isFinite(hour.visibility) && hour.visibility < DANGEROUS_VISIBILITY
+      }
+
+      return FOG_CODES.includes(hour.weatherCode) || (Number.isFinite(hour.visibility) && hour.visibility < visibilityCaution)
+    }
 
     addRisk({
       id: 'visibility',
       category: 'visibility',
       level,
-      title: level === 'danger' ? '매우 낮은 가시거리' : '안개·시야 주의',
-      reason: Number.isFinite(minVisibility) ? `최저 가시거리가 약 ${formatNumber(minVisibility / 1000, 1)}km로 예상됩니다.` : '예보에 안개 코드가 포함되어 있습니다.',
+      title: level === 'danger' ? '500m 미만 시야 위험' : '가시거리 저하 주의',
+      reason: hasLowVisibility ? `최저 가시거리가 약 ${formatNumber(minVisibility / 1000, 1)}km로 예상됩니다.` : '예보에 안개 코드가 포함되어 있습니다.',
       action: getTravelAction(travelType, 'visibility', level),
-      timeRange: getRiskTimeRange(hours, (hour) => FOG_CODES.includes(hour.weatherCode) || (Number.isFinite(hour.visibility) && hour.visibility <= visibilityCaution), visibilityPeak),
+      timeRange: getRiskTimeRange(hours, isVisibilityRiskHour, visibilityPeak),
     })
   }
 
-  const snowfallSum = day.snowfallSum ?? getMax(hours.map((hour) => hour.snowfall)) ?? 0
+  const snowfallSum = day.snowfallSum ?? getSum(hours.map((hour) => hour.snowfall)) ?? 0
   const hasSnowCode = hours.some((hour) => SNOW_CODES.includes(hour.weatherCode))
+  const hasHeavySnowCode = hours.some((hour) => HEAVY_SNOW_CODES.includes(hour.weatherCode))
 
   if (hasSnowCode || snowfallSum > 0) {
     const dangerThreshold = travelType === 'drive' ? 2 : 5
-    const level = snowfallSum >= dangerThreshold ? 'danger' : 'caution'
+    const level = hasHeavySnowCode || snowfallSum >= dangerThreshold ? 'danger' : 'caution'
 
     addRisk({
       id: 'snow',
       category: 'snow',
       level,
       title: level === 'danger' ? '적설·결빙 위험' : '눈 대비 필요',
-      reason: snowfallSum > 0 ? `예상 적설량은 ${formatNumber(snowfallSum, 2)}cm이며 도로와 탐방로가 미끄러울 수 있습니다.` : '예보에 눈 가능성이 포함되어 있어 도로와 탐방로가 미끄러울 수 있습니다.',
+      reason:
+        snowfallSum > 0
+          ? `예상 적설량은 ${formatNumber(snowfallSum, 2)}cm이며 도로와 탐방로가 미끄러울 수 있습니다.`
+          : hasHeavySnowCode
+            ? '예보에 강한 눈 코드가 포함되어 있어 적설과 결빙에 대비해야 합니다.'
+            : '예보에 눈 가능성이 포함되어 있어 도로와 탐방로가 미끄러울 수 있습니다.',
       action: travelType === 'drive' ? '겨울용 타이어와 도로 통제 정보를 확인하고 급가속·급제동을 피하세요.' : '방수 신발과 미끄럼 방지 장비를 준비하세요.',
       timeRange: getRiskTimeRange(hours, (hour) => SNOW_CODES.includes(hour.weatherCode) || (hour.snowfall ?? 0) > 0),
     })
@@ -360,8 +381,8 @@ const getHourPenalty = (hour) => {
     penalty += Math.max(hour.airQuality.providerAqi - 3, 0) * 20
   }
 
-  if (Number.isFinite(hour.visibility) && hour.visibility < 5000) {
-    penalty += Math.min((5000 - hour.visibility) / 200, 25)
+  if (Number.isFinite(hour.visibility) && hour.visibility < 2000) {
+    penalty += Math.min((2000 - hour.visibility) / 60, 25)
   }
 
   if (THUNDERSTORM_CODES.includes(hour.weatherCode)) {
@@ -490,7 +511,7 @@ export const createTravelPackingItems = (day, hours, travelType) => {
     addItem('mask', '보건용 마스크', '대기질이 나쁜 시간대의 노출을 줄이세요.')
   }
 
-  if ((day.snowfallSum ?? 0) > 0) {
+  if ((day.snowfallSum ?? 0) > 0 || hours.some((hour) => SNOW_CODES.includes(hour.weatherCode))) {
     addItem(travelType === 'drive' ? 'winter-drive' : 'anti-slip', travelType === 'drive' ? '겨울용 차량 장비' : '미끄럼 방지 장비', '눈과 결빙 가능성에 대비하세요.')
   }
 

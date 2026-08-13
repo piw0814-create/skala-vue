@@ -326,7 +326,7 @@
 
     ![alt text](image-14.png)
 
-# 실습 7. 외부 UI Library를 선정하고 3일차 과제에 외부 UI Library를 자유롭게 적용해 본다.
+# 실습 7. 외부 UI Library
 
 - npm으로 Element Plus를 설치하고 main.js에 전역 등록
 - 기존 상세보기 button을 el-button 컴포넌트로 교체
@@ -367,7 +367,7 @@
 
     ![alt text](image-16.png), ![alt text](image-17.png), ![alt text](image-18.png) ![alt text](image-19.png)
 
-# 실습 8. Hands on - Weather Refinement Modern JavaScript
+# 실습 8. Weather Refinement Modern JavaScript
 
 - 작성된 과제물을 더 정교하고 완성도 높게 디테일을 다듬는다.
 

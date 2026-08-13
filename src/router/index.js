@@ -17,6 +17,12 @@ const router = createRouter({
     },
 
     {
+      path: '/travel',
+      name: 'travel-coach',
+      component: () => import('../views/TravelCoachView.vue'),
+    },
+
+    {
       path: '/about',
       name: 'weather-about',
       component: () => import('../views/WeatherAboutView.vue'),

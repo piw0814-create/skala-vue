@@ -7,16 +7,24 @@
     "dev": "vite --host",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "run-s lint:*",
-    "lint:oxlint": "oxlint . --fix",
-    "lint:eslint": "eslint . --fix --cache",
-    "format": "prettier --write --experimental-cli src/"
+    "check": "run-s lint format:check build",
+    "lint": "run-s lint:oxlint lint:eslint",
+    "lint:oxlint": "oxlint . --deny-warnings",
+    "lint:eslint": "eslint . --cache --max-warnings 0",
+    "lint:fix": "run-s lint:fix:oxlint lint:fix:eslint",
+    "lint:fix:oxlint": "oxlint . --fix",
+    "lint:fix:eslint": "eslint . --fix --cache",
+    "format": "prettier --write src api index.html vite.config.js eslint.config.js vercel.json",
+    "format:check": "prettier --check src api index.html vite.config.js eslint.config.js vercel.json"
   },
   "dependencies": {
+    "@lucide/vue": "^1.31.0",
     "axios": "^1.18.1",
-    "element-plus": "^2.14.2",
+    "echarts": "^6.1.0",
+    "element-plus": "^2.14.4",
     "pinia": "^3.0.4",
     "vue": "^3.5.32",
+    "vue-echarts": "^8.1.0",
     "vue-router": "^5.0.4"
   },
   "devDependencies": {

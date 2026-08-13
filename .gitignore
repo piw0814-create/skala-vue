@@ -8,6 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+.vercel
 .DS_Store
 dist
 dist-ssr
@@ -37,3 +38,7 @@ __screenshots__/
 
 # Vite
 *.timestamp-*-*.mjs
+
+.env
+.env.*
+!.env.example

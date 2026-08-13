@@ -270,3 +270,150 @@
   - 동작 흐름: 체크박스 선택 → WeatherCard Emit → WeatherHomeView 이벤트 처리 → weatherStore Action → favoriteCityIds 변경 → favoriteCities Getter 재계산 → 즐겨찾기 탭 자동 갱신
 
   ![alt text](image-10.png)
+
+# 실습 6 API
+
+1. OpenWeatherMap API를 통해 실제 날씨 데이터를 가져와 적용한다.
+
+- 기존 Mock Data를 제거하고 OpenWeatherMap의 Current Weather API를 Axios로 호출
+- 도시별 위도·경도 정보를 cityConfigs로 관리
+- Promise.all()을 사용해 여러 도시의 날씨 데이터를 동시에 요청
+- async/await와 try/catch/finally를 활용해 비동기 통신과 오류·로딩 상태 처리
+- API에서 받은 기온, 습도, 풍속, 날씨 상태를 기존 weatherList 형식으로 변환해 Pinia Store에 저장
+- onMounted()에서 fetchWeatherList()를 실행해 페이지 진입 시 실시간 날씨를 자동 조회
+- isLoading과 errorMessage를 이용해 로딩 및 통신 실패 상태를 화면에 표시
+- 기존 체감온도, 통계, 경고, 즐겨찾기, 상세보기 기능이 실제 API 데이터를 사용하도록 연결
+- API Key는 .env의 VITE_OPENWEATHER_API_KEY로 분리하여 관리
+- 동작 흐름: onMounted → Store Action → Axios GET → OpenWeather API → JSON 응답 → weatherList 저장 → 화면 자동 갱신
+  ![alt text](image-11.png)
+
+2. OpenWeatherMap에서 제공되는 API를 추가하여 Application 기능을 확장한다.
+
+- 기존 Current Weather API에 Air Pollution API를 추가하여 날씨와 대기질 데이터를 함께 조회
+- 각 도시의 동일한 위도·경도(lat, lon)를 사용하여 두 API를 호출
+- Promise.all()을 활용해 도시별 날씨 API와 대기질 API를 동시에 요청
+- 모든 도시의 비동기 요청도 Promise.all()로 처리하여 여러 도시 데이터를 한꺼번에 조회
+- Air Pollution API의 AQI 값을 1~5 단계로 받아 좋음·양호·보통·나쁨·매우 나쁨으로 변환
+- PM2.5, PM10, CO, NO, NO2, O3, SO2, NH3 등의 대기오염 수치를 airQuality 객체로 저장
+- 날씨 데이터와 대기질 데이터를 하나의 도시 객체로 합쳐 weatherList에 저장
+- WeatherCard에는 간단하게 대기질 등급만 표시하여 목록의 가독성 유지
+- WeatherDetailView에서는 AQI와 각 대기오염 물질의 상세 수치를 확인할 수 있도록 구성
+- 동작 흐름: 도시 좌표 → Weather API + Air Pollution API 동시 호출 → 응답 데이터 결합 → weatherList 저장 → 카드/상세 화면에 반영
+  ![alt text](image-12.png) ![alt text](image-13.png)
+
+3. 기타 외부 API를 추가하여 Application 기능을 확장한다.
+
+- Sunrise-Sunset 외부 API를 활용한 일출·일몰 정보 추가
+  - OpenWeatherMap과 별개의 Sunrise-Sunset API를 추가하여 기타 외부 API 연동 구현
+  - 기존 도시 데이터의 위도·경도(lat, lon)를 재사용하여 일출·일몰 정보를 조회
+  - 기존 Weather API, Air Pollution API와 함께 Promise.all()로 동시에 호출
+  - Sunrise-Sunset API 응답의 sunrise, sunset, day_length 값을 sunInfo 객체로 저장
+  - 서로 다른 외부 API의 데이터를 하나의 도시 객체로 통합하여 weatherList에서 관리
+  - WeatherDetailView에서 일출 시간, 일몰 시간, 낮 길이를 표시
+  - ISO 형식의 시간을 formatTime()으로 보기 쉬운 현지 시간 형식으로 변환
+  - 초 단위의 day_length 값을 formatDayLength()로 시간·분 형식으로 변환
+  - 카드에는 기존 날씨·대기질 요약을 유지하고, 일출·일몰 정보는 상세페이지에서만 표시
+  - 동작 흐름: 도시 좌표 → Weather API + Air Pollution API + Sunrise-Sunset API 동시 호출 → 응답 데이터 통합 → weatherList 저장 → 상세페이지에 표시
+    ![alt text](image-14.png)
+
+# 실습 7. 외부 UI Library를 선정하고 3일차 과제에 외부 UI Library를 자유롭게 적용해 본다.
+
+- npm으로 Element Plus를 설치하고 main.js에 전역 등록
+- 기존 상세보기 button을 el-button 컴포넌트로 교체
+- type, size, plain, round 등의 Props를 변경하며 버튼 디자인 테스트
+- 기존 @click, emit 구조는 그대로 유지하면서 UI만 라이브러리 컴포넌트로 변경
+- 직접 CSS를 작성하지 않고 제공되는 UI 컴포넌트와 옵션을 활용해 화면 스타일을 빠르게 변경
+  ![alt text](image-15.png)
+- 전체적인 UI 변경
+  - 여기서부턴 ai(코덱스) 본격적으로 사용합니다
+  - Element Plus 적용
+    - 검색창, 경고 기준 입력, 탭, 버튼, Tag
+    - Loading Skeleton, Error Alert, Empty 화면
+    - 통계, 진행 단계, 404 화면
+
+  - Lucide 아이콘 적용
+    - 날씨, 기온, 습도, 풍속, 즐겨찾기, 일출·일몰, 메뉴 아이콘 통일
+
+  - ECharts 적용
+    - 통계 페이지에 도시별 현재 기온·체감온도 막대그래프 추가
+    - 섭씨·화씨 변경 시 차트도 반응형으로 변경
+
+  - 화면 디자인 개선
+    - 공통 헤더와 내비게이션
+    - WeatherCard 정보 계층 정리
+    - 상세·통계·경고·소개·404 화면 디자인 통일
+    - 데스크톱·모바일 반응형 적용
+
+  - 기능 개선
+    - API 새로고침 버튼
+    - 마지막 갱신 시각
+    - 상세·통계·경고 URL 직접 접근 시 API 자동 조회
+    - 상세보기 Emit 연결 오류 수정
+    - Loading·Error·데이터 없음 상태 개선
+
+  - 코드 정리 - 인라인 이벤트를 이름 있는 함수로 분리 - 중복 전역 CSS를 scoped CSS로 이동
+    ![alt text](image-16.png), ![alt text](image-17.png), ![alt text](image-18.png) ![alt text](image-19.png)
+
+# 실습 8. Hands on - Weather Refinement Modern JavaScript
+
+- 작성된 과제물을 더 정교하고 완성도 높게 디테일을 다듬는다.
+
+1. 완성도를 높일 외부 라이브러리를 추가하면서 기능을 정비한다.
+2. 스타일을 다듬어 완성도를 높인다.
+3. README 파일에 과제에 대한 내용을 정리한다.
+
+- 생활 날씨 코치 기능 추가
+  - 야외활동, 빨래, 출퇴근 중 오늘 할 활동을 v-model로 선택
+  - 선택한 활동에 필요한 날씨 주의 요소, 주의 시간대, 준비물을 제공
+  - computed()를 사용하여 활동이 변경될 때 코칭 결과를 자동으로 다시 계산
+  - 활동별 시간 범위를 적용해 필요한 시간의 예보만 분석
+  - 비, 바람, 더위, 추위, 눈, 시야, 대기질 위험을 서로 다른 기준으로 판별
+  - 부모 컴포넌트가 Props로 도시·예보 데이터를 전달하고 자식 컴포넌트는 Emits로 재조회 요청
+  - v-if로 로딩, 오류, 데이터 없음, 정상 결과 화면을 구분
+  - v-for와 :key를 사용해 위험 요소와 준비물 목록을 렌더링
+    ![alt text](image-25.png)
+- 여행 날씨 코치 기능 추가
+  - 도시, 여행 날짜, 여행 유형을 선택하여 미래 날씨 분석
+  - 오늘을 포함한 5일간의 예보 조회 지원
+  - 도시 여행, 캠핑, 등산, 자동차 여행에 서로 다른 바람·강수 위험 기준 적용
+  - TravelPlannerForm, TravelRiskList, TravelPackingList 등으로 기능을 컴포넌트화
+  - 입력 컴포넌트는 Props로 값을 받고 update:\* 이벤트를 발생시켜 v-model 구현
+  - useTravelCoach Composable에서 위험 분석과 준비물 생성 로직을 공통 관리
+  - computed()로 날짜나 여행 유형이 변경될 때 분석 결과를 자동 갱신
+  - 비, 돌풍, 체감온도, 자외선, 대기질, 가시거리, 눈 위험을 종합적으로 분석
+    ![alt text](image-22.png)
+- Open-Meteo와 OpenWeather를 활용한 예보 전환 기능 추가
+  - 기본 미래 예보는 Open-Meteo 날씨 API와 대기질 API를 사용
+  - 기본 API가 요청 제한 또는 오류로 실패하면 OpenWeather API를 자동 호출
+  - OpenWeather의 5일·3시간 날씨 예보와 대기질 예보를 대체 데이터로 사용
+  - Axios와 async/await, try/catch를 사용하여 API 실패 상황 처리
+  - 현재 사용 중인 데이터 제공처와 대체 예보 사용 여부를 Pinia Store에 저장
+  - v-if를 활용해 대체 예보 사용 중이라는 안내 문구 표시
+    ![alt text](image-21.png)
+- 기상청 공식 특보 및 안전 센터 기능 추가
+  - 기상청 API를 이용해 현재 발표된 공식 기상특보 조회
+  - 특보 지역명을 프로젝트의 도시 정보와 연결하여 도시별 특보 제공
+  - officialWarningStore에서 특보 데이터, 로딩 상태, 오류 상태를 전역 관리
+  - 대시보드, 생활 코치, 여행 코치, 안전 센터에서 동일한 특보 데이터 재사용
+  - 공식 기상특보와 앱에서 계산한 체감온도 주의 정보를 명확히 구분
+  - 폭염, 호우, 강풍 등 위험 유형별 행동 요령 제공
+  - :class를 사용하여 주의·위험 단계에 따라 색상과 디자인 변경
+  - onMounted()에서 초기 특보 데이터를 조회하고 새로고침 이벤트 지원
+    ![alt text](image-23.png)
+- Vue Router 기반 SPA 화면 확장
+  - 대시보드, 여행 코치, 날씨 통계, 안전 센터, 서비스 소개, 도시 상세 화면 구성
+  - URL과 각 View 컴포넌트를 Router의 routes 배열로 연결
+  - RouterLink를 이용해 전체 페이지를 새로고침하지 않고 화면 이동
+  - useRoute()로 URL의 도시 ID를 읽어 상세 날씨 조회
+  - useRouter()를 이용해 카드 클릭 시 상세페이지로 이동
+  - 존재하지 않는 주소는 Catch-all Route를 통해 Not Found 화면으로 연결
+  - 각 View는 필요한 하위 컴포넌트를 조합하여 컴포넌트 기반 SPA 구조 구현
+
+- **디자인 전면 개편**
+  ![alt text](image-24.png)
+  - 인트로 화면도 추가
+    ![alt text](image-26.png)
+  - 이미지 추가
+    ![alt text](image-27.png)
+
+- 코드 품질관리 부터 배포까지

@@ -1,0 +1,285 @@
+:root {
+  --el-color-primary: #187f78;
+  --el-color-primary-light-3: #4f9f98;
+  --el-color-primary-light-5: #7fb9b2;
+  --el-color-primary-light-7: #b6d6d0;
+  --el-color-primary-light-8: #d1e6e1;
+  --el-color-primary-light-9: #eaf4f1;
+  --el-color-primary-dark-2: #0f625e;
+  --el-color-success: #258b69;
+  --el-color-warning: #c77a25;
+  --el-color-danger: #cf4f4f;
+  --el-border-color: #d8e3df;
+  --el-border-color-light: #e4ece9;
+  --el-fill-color-light: #f2f6f4;
+  --el-fill-color-blank: #ffffff;
+  --el-text-color-primary: #112a2a;
+  --el-text-color-regular: #49605e;
+  --el-text-color-secondary: #708280;
+  --el-border-radius-base: 10px;
+  --el-border-radius-small: 8px;
+  --el-box-shadow-light: 0 14px 35px rgba(20, 57, 54, 0.12);
+}
+
+#app .el-button {
+  font-weight: 720;
+}
+
+#app .el-input__wrapper,
+#app .el-select__wrapper,
+#app .el-date-editor.el-input__wrapper,
+#app .el-input-number .el-input__wrapper {
+  min-height: 38px;
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px var(--weather-border) inset;
+}
+
+#app .el-alert {
+  border-radius: 11px;
+}
+
+#app .el-tabs__item {
+  height: 36px;
+  font-size: 0.78rem;
+  font-weight: 720;
+}
+
+#app .el-tag {
+  font-weight: 720;
+}
+
+#app .official-warning-area .official-alert {
+  padding: 10px 13px;
+  border-radius: 11px;
+  box-shadow: none;
+}
+
+#app .official-warning-area .safe-alert {
+  color: #2d6557;
+  background: rgba(232, 245, 239, 0.88);
+  border-color: #c7dfd6;
+  font-size: 0.72rem;
+}
+
+#app .page-heading {
+  align-items: center;
+  margin-bottom: 14px;
+  padding: 3px 1px;
+}
+
+#app .page-heading h1 {
+  margin: 1px 0 3px;
+  color: var(--weather-navy);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  line-height: 1.15;
+  letter-spacing: -0.045em;
+}
+
+#app .page-heading p:not(.page-eyebrow) {
+  color: var(--weather-muted);
+  font-size: 0.78rem;
+}
+
+#app .page-eyebrow,
+#app .section-kicker {
+  color: var(--weather-primary);
+  font-size: 0.64rem;
+  font-weight: 850;
+  letter-spacing: 0.14em;
+}
+
+#app .surface-card,
+#app .base-dashboard-card,
+#app .daily-forecast-panel,
+#app .risk-panel,
+#app .packing-panel,
+#app .saved-plan-panel,
+#app .planner-card,
+#app .life-coach-panel {
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid var(--weather-border);
+  border-radius: 15px;
+  box-shadow: 0 10px 28px rgba(24, 57, 54, 0.07);
+}
+
+#app .surface-card {
+  padding: 18px;
+}
+
+#app .section-heading h2,
+#app .section-title-row h2,
+#app .result-heading h2,
+#app .daily-heading h2 {
+  color: var(--weather-navy);
+  font-size: 1.08rem;
+  letter-spacing: -0.025em;
+}
+
+#app .detail-hero,
+#app .about-hero {
+  overflow: hidden;
+  color: #eff8f5;
+  background: linear-gradient(110deg, rgba(10, 36, 35, 0.96), rgba(24, 71, 66, 0.82)), radial-gradient(circle at 82% 18%, rgba(182, 222, 212, 0.2), transparent 30%);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 17px;
+  box-shadow: 0 18px 40px rgba(15, 55, 51, 0.17);
+}
+
+#app .detail-hero h2,
+#app .detail-hero strong,
+#app .about-hero h2 {
+  color: #ffffff;
+}
+
+#app .detail-hero p,
+#app .detail-hero span,
+#app .about-hero p {
+  color: #bfd2cd;
+}
+
+#app .condition-grid,
+#app .pollutant-grid,
+#app .sun-grid,
+#app .stat-grid,
+#app .safety-summary-grid,
+#app .forecast-grid {
+  gap: 10px;
+}
+
+#app .condition-item,
+#app .pollutant-item,
+#app .sun-item,
+#app .stat-card,
+#app .summary-card,
+#app .forecast-item,
+#app .extreme-card {
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+#app .weather-card,
+#app .warning-card,
+#app .day-risk-list li,
+#app .saved-plan-card {
+  box-shadow: none;
+}
+
+#app .life-coach-panel {
+  padding: 18px;
+}
+
+#app .life-coach-panel .coach-heading h2 {
+  font-size: 1.2rem;
+}
+
+#app .life-coach-panel .coach-context {
+  background: linear-gradient(135deg, #e9f4f1, #f4f8f7);
+  border-color: #c9ddd8;
+}
+
+#app .life-coach-panel .life-info-grid {
+  gap: 9px;
+}
+
+#app .life-coach-panel .attention-panel,
+#app .life-coach-panel .time-panel,
+#app .life-coach-panel .preparation-panel {
+  padding: 14px;
+  border-radius: 11px;
+}
+
+#app .travel-container,
+#app .detail-container,
+#app .stats-container,
+#app .warning-container,
+#app .about-container {
+  display: grid;
+  gap: 12px;
+}
+
+#app .travel-container > *,
+#app .detail-container > *,
+#app .stats-container > *,
+#app .warning-container > *,
+#app .about-container > * {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+#app .weather-chart {
+  min-height: 320px;
+}
+
+#app .analysis-guide .el-collapse-item__header {
+  min-height: 44px;
+  color: var(--weather-navy);
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+@media (max-width: 720px) {
+  #app .app-header .unit-label {
+    display: none;
+  }
+
+  #app .app-header .toggle-btn.el-button {
+    width: 34px;
+    min-width: 34px;
+    padding: 0;
+    font-size: 0;
+  }
+
+  #app .official-warning-area .warning-alert {
+    padding: 9px 11px;
+  }
+
+  #app .official-warning-area .alert-heading {
+    align-items: center;
+    flex-direction: row;
+    gap: 9px;
+  }
+
+  #app .official-warning-area .alert-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+
+  #app .official-warning-area .alert-heading span:not(.alert-icon) {
+    display: none;
+  }
+
+  #app .official-warning-area .alert-heading h2 {
+    font-size: 0.78rem;
+  }
+
+  #app .official-warning-area .warning-detail-link {
+    margin-left: auto;
+    padding: 6px 8px;
+    font-size: 0;
+  }
+
+  #app .official-warning-area .warning-detail-link::after {
+    content: '확인';
+    font-size: 0.66rem;
+  }
+
+  #app .page-heading {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  #app .surface-card,
+  #app .life-coach-panel,
+  #app .daily-forecast-panel,
+  #app .risk-panel,
+  #app .packing-panel,
+  #app .saved-plan-panel,
+  #app .planner-card {
+    padding: 14px;
+  }
+
+  #app .weather-chart {
+    min-height: 260px;
+  }
+}

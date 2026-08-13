@@ -365,7 +365,7 @@
 
   - 코드 정리 - 인라인 이벤트를 이름 있는 함수로 분리 - 중복 전역 CSS를 scoped CSS로 이동
 
-    ![alt text](image-16.png), ![alt text](image-17.png), ![alt text](image-18.png) ![alt text](image-19.png)
+![alt text](image-16.png), ![alt text](image-17.png), ![alt text](image-18.png) ![alt text](image-19.png)
 
 # 실습 8. Weather Refinement Modern JavaScript
 

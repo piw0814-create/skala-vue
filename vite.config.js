@@ -56,37 +56,6 @@ export default defineConfig(({ mode }) => {
     // 🟢 [커스텀 추가 2] 컴파일 완료된 산출물(Production Build) 사양 제어
     build: {
       outDir: 'dist', // 최종 정적 리소스(HTML, JS, CSS)가 저장될 출력 디렉토리명 지정
-      rolldownOptions: {
-        output: {
-          codeSplitting: {
-            groups: [
-              {
-                name: 'vue-vendor',
-                test: /node_modules[\\/](?:@vue|vue|vue-router|pinia)[\\/]/,
-                priority: 40,
-              },
-              {
-                name: 'charts-vendor',
-                test: /node_modules[\\/](?:echarts|zrender|vue-echarts)[\\/]/,
-                priority: 30,
-                maxSize: 400 * 1024,
-              },
-              {
-                name: 'element-vendor',
-                test: /node_modules[\\/](?:element-plus|@element-plus|@vueuse)[\\/]/,
-                priority: 20,
-                maxSize: 400 * 1024,
-              },
-              {
-                name: 'vendor',
-                test: /node_modules[\\/]/,
-                priority: 10,
-                maxSize: 400 * 1024,
-              },
-            ],
-          },
-        },
-      },
     },
   }
 })

@@ -417,3 +417,13 @@
     ![alt text](image-27.png)
 
 - 코드 품질관리 부터 배포까지
+  - ESLint와 Oxlint로 결함 가능성이 있는 코드를 검사한다.
+  - Prettier로 프로젝트 전체의 코드 형식을 통일한다.
+  - .env로 환경별 설정값을 관리한다.
+  - 공개 변수와 서버 비밀키를 구분한다.
+  - Vite가 소스 코드를 프로덕션용으로 번들링한다.
+  - 완성된 결과물은 dist 폴더에 생성된다.
+  - Vercel이 정적 파일과 서버 함수를 함께 배포한다.
+  - GitHub를 연결하면 Push 이후 배포를 자동화한다
+
+https://skala-vue-three-roan.vercel.app

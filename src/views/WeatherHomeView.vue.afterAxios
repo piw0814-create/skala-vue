@@ -6,6 +6,7 @@ import axios from 'axios' // 🟢 Axios 수입
 import BaseDashboardCard from '../components/exercise/BaseDashboardCard.vue'
 import SearchBar from '../components/exercise/SearchBar.vue'
 import WeatherCard from '../components/exercise/WeatherCard.vue'
+import { getOpenWeatherStatus } from '@/utils/weatherCondition'
 
 const router = useRouter()
 const route = useRoute()
@@ -17,7 +18,7 @@ const selectedCityInfo = ref('카드를 클릭하거나 검색해 보세요.')
 const isLoading = ref(false)
 
 // 💡 OpenWeatherMap 필수 연동 규격 정의
-const API_KEY = '8964edc63b366d27b5b728b7976570b7'
+const API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY
 const BASE_URL = 'https://api.openweathermap.org/data/2.5/weather'
 
 // 🟢 [고도화] 3개 도시의 실제 실시간 데이터를 병렬로 긁어오는 비동기 파이프라인 함수
@@ -36,19 +37,31 @@ const fetchRealTimeWeather = async () => {
         id: 'city_01',
         name: '서울',
         temp: seoulRes.data.main.temp,
-        status: seoulRes.data.weather[0].description,
+        status: getOpenWeatherStatus({
+          code: seoulRes.data.weather[0].id,
+          cloudiness: seoulRes.data.clouds?.all,
+          fallback: seoulRes.data.weather[0].description,
+        }),
       },
       {
         id: 'city_02',
         name: '수원',
         temp: suwonRes.data.main.temp,
-        status: suwonRes.data.weather[0].description,
+        status: getOpenWeatherStatus({
+          code: suwonRes.data.weather[0].id,
+          cloudiness: suwonRes.data.clouds?.all,
+          fallback: suwonRes.data.weather[0].description,
+        }),
       },
       {
         id: 'city_03',
         name: '부산',
         temp: busanRes.data.main.temp,
-        status: busanRes.data.weather[0].description,
+        status: getOpenWeatherStatus({
+          code: busanRes.data.weather[0].id,
+          cloudiness: busanRes.data.clouds?.all,
+          fallback: busanRes.data.weather[0].description,
+        }),
       },
     ]
     console.log('🟢 [API 통신 완료] 메인 대시보드 실시간 기상 장부 동기화:', weatherList.value)

@@ -1,12 +1,23 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import axios from 'axios'
 
 import { OPENWEATHER_API_KEY } from '@/config/env'
+import { getOpenWeatherStatus } from '@/utils/weatherCondition'
 
 const weatherData = ref(null)
 const isLoading = ref(false)
 const errorMessage = ref('')
+
+const weatherStatus = computed(() => {
+  if (!weatherData.value) return ''
+
+  return getOpenWeatherStatus({
+    code: weatherData.value.weather[0].id,
+    cloudiness: weatherData.value.clouds?.all,
+    fallback: weatherData.value.weather[0].description,
+  })
+})
 
 const handleFetchWeather = async () => {
   isLoading.value = true
@@ -73,7 +84,7 @@ const handleFetchWeather = async () => {
       <p>
         ☁️ 날씨:
         <strong>
-          {{ weatherData.weather[0].description }}
+          {{ weatherStatus }}
         </strong>
       </p>
 

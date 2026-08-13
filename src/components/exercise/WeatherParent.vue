@@ -29,7 +29,7 @@ const weatherList = ref([
     id: 'city_03',
     name: '부산',
     temp: 26,
-    status: '구름',
+    status: '구름많음',
     humidity: 70,
     wind: 4.1,
   },

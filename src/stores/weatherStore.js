@@ -3,6 +3,7 @@ import axios from 'axios'
 
 import { OPENWEATHER_API_KEY } from '@/config/env'
 import { cityConfigs } from '@/data/cityConfigs'
+import { getOpenWeatherStatus } from '@/utils/weatherCondition'
 
 // ----------------------------------------------------
 // 체감온도 계산
@@ -259,7 +260,11 @@ export const useWeatherStore = defineStore('weather', {
 
             // 날씨 데이터
             temp: weatherData.main.temp,
-            status: weatherData.weather[0].description,
+            status: getOpenWeatherStatus({
+              code: weatherData.weather[0].id,
+              cloudiness: weatherData.clouds?.all,
+              fallback: weatherData.weather[0].description,
+            }),
             condition: weatherData.weather[0].main.toLowerCase(),
             humidity: weatherData.main.humidity,
             wind: weatherData.wind.speed,

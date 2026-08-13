@@ -17,17 +17,21 @@
   - v-model.trim으로 검색어를 입력받음.
   - v-if="city.name.includes(searchCity)"를 이용하여 검색어가 포함된 도시만 화면에 표시.
   - 검색어가 변경되면 Vue의 반응형 상태에 따라 화면도 자동으로 변경 확인.
+
     ![alt text](image-1.png)
+
 - 선택된 카드 강조
   - 현재 선택된 도시의 ID를 selectedCityId에 저장.
   - 카드를 클릭하면 선택한 도시 ID와 상태 문구를 변경.
   - 현재 카드의 ID와 selectedCityId가 같으면 selected 클래스를 추가하여 CSS로 강조.
+
     ![alt text](image-2.png)
 
 - 상세정보 펼치기/접기
   - detailCityId에 현재 상세정보가 열린 도시 ID를 저장.
   - toggleDetail() 함수에서 같은 카드를 다시 누르면 닫고, 다른 카드를 누르면 해당 도시의 상세정보를 표시.
   - v-show를 이용해 상세정보 영역의 표시 여부를 제어.
+
     ![alt text](image-3.png)
 
 # 실습2. Weather Composition (WeatherComposition.vue 파일 수정)
@@ -172,6 +176,7 @@
   - weatherStore의 날씨 데이터를 활용해 평균 기온·습도·풍속 및 최고/최저 도시 계산
   - 상세보기에서 /weather/:cityId로 이동
   - App.vue에 RouterLink로 /stats 연결
+
     ![alt text](image-6.png)
 
 - WeatherWarningView (체감온도 경고 현황)
@@ -181,6 +186,7 @@
   - 경고 기준 이상인 도시의 기온·체감온도·습도·풍속 표시
   - 상세보기에서 /weather/:cityId로 이동
   - App.vue에 RouterLink로 /warnings 연결
+
     ![alt text](image-7.png)
 
 # 실습5. Weather Store
@@ -247,6 +253,7 @@
         └─ formatTemp() → 숫자 + 단위 표시
 
 - 다른 view파일 모든 온도 표시를 formatTemp()로 통일
+
   ![alt text](image-8.png) ![alt text](image-9.png)
 
 ## 추가 기능 추가 : 즐겨찾기 체크박스 및 목록
@@ -285,6 +292,7 @@
 - 기존 체감온도, 통계, 경고, 즐겨찾기, 상세보기 기능이 실제 API 데이터를 사용하도록 연결
 - API Key는 .env의 VITE_OPENWEATHER_API_KEY로 분리하여 관리
 - 동작 흐름: onMounted → Store Action → Axios GET → OpenWeather API → JSON 응답 → weatherList 저장 → 화면 자동 갱신
+
   ![alt text](image-11.png)
 
 2. OpenWeatherMap에서 제공되는 API를 추가하여 Application 기능을 확장한다.
@@ -299,6 +307,7 @@
 - WeatherCard에는 간단하게 대기질 등급만 표시하여 목록의 가독성 유지
 - WeatherDetailView에서는 AQI와 각 대기오염 물질의 상세 수치를 확인할 수 있도록 구성
 - 동작 흐름: 도시 좌표 → Weather API + Air Pollution API 동시 호출 → 응답 데이터 결합 → weatherList 저장 → 카드/상세 화면에 반영
+
   ![alt text](image-12.png) ![alt text](image-13.png)
 
 3. 기타 외부 API를 추가하여 Application 기능을 확장한다.
@@ -314,6 +323,7 @@
   - 초 단위의 day_length 값을 formatDayLength()로 시간·분 형식으로 변환
   - 카드에는 기존 날씨·대기질 요약을 유지하고, 일출·일몰 정보는 상세페이지에서만 표시
   - 동작 흐름: 도시 좌표 → Weather API + Air Pollution API + Sunrise-Sunset API 동시 호출 → 응답 데이터 통합 → weatherList 저장 → 상세페이지에 표시
+
     ![alt text](image-14.png)
 
 # 실습 7. 외부 UI Library를 선정하고 3일차 과제에 외부 UI Library를 자유롭게 적용해 본다.
@@ -323,7 +333,9 @@
 - type, size, plain, round 등의 Props를 변경하며 버튼 디자인 테스트
 - 기존 @click, emit 구조는 그대로 유지하면서 UI만 라이브러리 컴포넌트로 변경
 - 직접 CSS를 작성하지 않고 제공되는 UI 컴포넌트와 옵션을 활용해 화면 스타일을 빠르게 변경
+
   ![alt text](image-15.png)
+
 - 전체적인 UI 변경
   - 여기서부턴 ai(코덱스) 본격적으로 사용합니다
   - Element Plus 적용
@@ -352,6 +364,7 @@
     - Loading·Error·데이터 없음 상태 개선
 
   - 코드 정리 - 인라인 이벤트를 이름 있는 함수로 분리 - 중복 전역 CSS를 scoped CSS로 이동
+
     ![alt text](image-16.png), ![alt text](image-17.png), ![alt text](image-18.png) ![alt text](image-19.png)
 
 # 실습 8. Hands on - Weather Refinement Modern JavaScript
@@ -371,7 +384,9 @@
   - 부모 컴포넌트가 Props로 도시·예보 데이터를 전달하고 자식 컴포넌트는 Emits로 재조회 요청
   - v-if로 로딩, 오류, 데이터 없음, 정상 결과 화면을 구분
   - v-for와 :key를 사용해 위험 요소와 준비물 목록을 렌더링
+
     ![alt text](image-25.png)
+
 - 여행 날씨 코치 기능 추가
   - 도시, 여행 날짜, 여행 유형을 선택하여 미래 날씨 분석
   - 오늘을 포함한 5일간의 예보 조회 지원
@@ -381,7 +396,9 @@
   - useTravelCoach Composable에서 위험 분석과 준비물 생성 로직을 공통 관리
   - computed()로 날짜나 여행 유형이 변경될 때 분석 결과를 자동 갱신
   - 비, 돌풍, 체감온도, 자외선, 대기질, 가시거리, 눈 위험을 종합적으로 분석
+
     ![alt text](image-22.png)
+
 - Open-Meteo와 OpenWeather를 활용한 예보 전환 기능 추가
   - 기본 미래 예보는 Open-Meteo 날씨 API와 대기질 API를 사용
   - 기본 API가 요청 제한 또는 오류로 실패하면 OpenWeather API를 자동 호출
@@ -389,7 +406,9 @@
   - Axios와 async/await, try/catch를 사용하여 API 실패 상황 처리
   - 현재 사용 중인 데이터 제공처와 대체 예보 사용 여부를 Pinia Store에 저장
   - v-if를 활용해 대체 예보 사용 중이라는 안내 문구 표시
+
     ![alt text](image-21.png)
+
 - 기상청 공식 특보 및 안전 센터 기능 추가
   - 기상청 API를 이용해 현재 발표된 공식 기상특보 조회
   - 특보 지역명을 프로젝트의 도시 정보와 연결하여 도시별 특보 제공
@@ -399,7 +418,9 @@
   - 폭염, 호우, 강풍 등 위험 유형별 행동 요령 제공
   - :class를 사용하여 주의·위험 단계에 따라 색상과 디자인 변경
   - onMounted()에서 초기 특보 데이터를 조회하고 새로고침 이벤트 지원
+
     ![alt text](image-23.png)
+
 - Vue Router 기반 SPA 화면 확장
   - 대시보드, 여행 코치, 날씨 통계, 안전 센터, 서비스 소개, 도시 상세 화면 구성
   - URL과 각 View 컴포넌트를 Router의 routes 배열로 연결
@@ -410,10 +431,14 @@
   - 각 View는 필요한 하위 컴포넌트를 조합하여 컴포넌트 기반 SPA 구조 구현
 
 - **디자인 전면 개편**
+
   ![alt text](image-24.png)
   - 인트로 화면도 추가
+
     ![alt text](image-26.png)
+
   - 이미지 추가
+
     ![alt text](image-27.png)
 
 - 코드 품질관리 부터 배포까지

@@ -6,7 +6,7 @@ defineProps({
     type: Object,
     required: true,
   },
-  risks: {
+  days: {
     type: Array,
     default: () => [],
   },
@@ -42,25 +42,40 @@ const getStatusTagType = (level) => {
       <el-tag :type="getStatusTagType(status.level)" effect="dark" round>앱 분석</el-tag>
     </div>
 
-    <div v-if="risks.length > 0" class="risk-list">
-      <article v-for="risk in risks" :key="risk.id" class="risk-item" :class="`risk-${risk.level}`">
-        <div class="risk-heading">
-          <span class="risk-icon"><TriangleAlert :size="19" /></span>
+    <div v-if="days.length > 0" class="risk-days">
+      <section v-for="day in days" :key="day.date" class="risk-day">
+        <div class="risk-day-heading">
           <div>
-            <span>{{ risk.level === 'danger' ? '위험' : '주의' }}</span>
-            <h3>{{ risk.title }}</h3>
+            <span>{{ day.date }}</span>
+            <h3>{{ day.formattedDate }}</h3>
           </div>
-          <el-tag :type="getStatusTagType(risk.level)" effect="light" round size="small">앱 분석</el-tag>
+          <div class="risk-day-status">
+            <strong>종합 위험 점수 {{ day.status.score }}점</strong>
+            <el-tag :type="getStatusTagType(day.status.level)" effect="dark" round size="small">{{ day.status.label }}</el-tag>
+          </div>
         </div>
 
-        <p class="risk-reason">{{ risk.reason }}</p>
-        <p class="risk-action">{{ risk.action }}</p>
+        <div class="risk-list">
+          <article v-for="risk in day.risks" :key="`${day.date}-${risk.id}`" class="risk-item" :class="`risk-${risk.level}`">
+            <div class="risk-heading">
+              <span class="risk-icon"><TriangleAlert :size="19" /></span>
+              <div>
+                <span>{{ risk.level === 'danger' ? '위험' : '주의' }} · 심각도 {{ risk.severityScore }}/100</span>
+                <h3>{{ risk.title }}</h3>
+              </div>
+              <el-tag :type="getStatusTagType(risk.level)" effect="light" round size="small">앱 분석</el-tag>
+            </div>
 
-        <span class="risk-time">
-          <Clock3 :size="15" />
-          주의 시간대 {{ risk.timeRange }}
-        </span>
-      </article>
+            <p class="risk-reason">{{ risk.reason }}</p>
+            <p class="risk-action">{{ risk.action }}</p>
+
+            <span class="risk-time">
+              <Clock3 :size="15" />
+              주의 시간대 {{ risk.timeRange }}
+            </span>
+          </article>
+        </div>
+      </section>
     </div>
 
     <div v-else class="safe-message">
@@ -142,13 +157,54 @@ const getStatusTagType = (level) => {
   font-size: 0.86rem;
 }
 
+.risk-days {
+  display: grid;
+  gap: 20px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--weather-border);
+}
+
+.risk-day + .risk-day {
+  padding-top: 20px;
+  border-top: 1px solid var(--weather-border);
+}
+
+.risk-day-heading,
+.risk-day-status {
+  display: flex;
+  align-items: center;
+}
+
+.risk-day-heading {
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.risk-day-heading span {
+  color: var(--weather-muted);
+  font-size: 0.7rem;
+}
+
+.risk-day-heading h3 {
+  color: var(--weather-navy);
+  font-size: 1.05rem;
+}
+
+.risk-day-status {
+  gap: 9px;
+}
+
+.risk-day-status strong {
+  color: var(--weather-text);
+  font-size: 0.78rem;
+}
+
 .risk-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid var(--weather-border);
+  margin-top: 12px;
 }
 
 .risk-item {
@@ -261,6 +317,11 @@ const getStatusTagType = (level) => {
 
   .status-summary > .el-tag {
     margin-left: 0;
+  }
+
+  .risk-day-heading {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 </style>

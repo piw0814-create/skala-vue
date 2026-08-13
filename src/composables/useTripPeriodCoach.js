@@ -18,6 +18,8 @@ const getMin = (values) => {
 const getDayStatus = (risks) => {
   const dangerCount = risks.filter((risk) => risk.level === 'danger').length
   const cautionCount = risks.filter((risk) => risk.level === 'caution').length
+  const severityScores = risks.map((risk) => risk.severityScore).filter(Number.isFinite)
+  const score = Math.round(severityScores.reduce((sum, severityScore) => sum + severityScore, 0))
 
   if (dangerCount > 0) {
     return {
@@ -25,7 +27,7 @@ const getDayStatus = (risks) => {
       label: '위험',
       dangerCount,
       cautionCount,
-      score: dangerCount * 100 + cautionCount * 10,
+      score,
     }
   }
 
@@ -35,7 +37,7 @@ const getDayStatus = (risks) => {
       label: '주의',
       dangerCount,
       cautionCount,
-      score: cautionCount * 10,
+      score,
     }
   }
 
@@ -48,21 +50,79 @@ const getDayStatus = (risks) => {
   }
 }
 
-export const useTripPeriodCoach = ({ dailyForecast, hourlyForecast, travelType }) => {
+const isNextDate = (firstDate, secondDate) => {
+  const firstTimestamp = new Date(`${firstDate}T00:00:00Z`).getTime()
+  const secondTimestamp = new Date(`${secondDate}T00:00:00Z`).getTime()
+  return Number.isFinite(firstTimestamp) && Number.isFinite(secondTimestamp) && secondTimestamp - firstTimestamp === 24 * 60 * 60 * 1000
+}
+
+const hasMatchingAdjacentDay = (days, index, matches) => {
+  const currentDay = days[index]
+  const previousDay = days[index - 1]
+  const nextDay = days[index + 1]
+
+  return (previousDay && isNextDate(previousDay.date, currentDay.date) && matches(previousDay)) || (nextDay && isNextDate(currentDay.date, nextDay.date) && matches(nextDay))
+}
+
+const isColdSeason = (date) => {
+  const month = Number(date.slice(5, 7))
+  return month >= 10 || month <= 4
+}
+
+const getOfficialTemperatureLevels = (dailyForecast) => {
+  const sortedDays = [...dailyForecast].sort((first, second) => first.date.localeCompare(second.date))
+  const heatLevels = new Map()
+  const coldLevels = new Map()
+
+  sortedDays.forEach((day, index) => {
+    const hasHeatDangerSequence = day.feelsLikeMax >= 35 && hasMatchingAdjacentDay(sortedDays, index, (adjacentDay) => adjacentDay.feelsLikeMax >= 35)
+    const hasHeatCautionSequence = day.feelsLikeMax >= 33 && hasMatchingAdjacentDay(sortedDays, index, (adjacentDay) => adjacentDay.feelsLikeMax >= 33)
+
+    if (hasHeatDangerSequence) {
+      heatLevels.set(day.date, 'danger')
+    } else if (hasHeatCautionSequence) {
+      heatLevels.set(day.date, 'caution')
+    }
+
+    if (!isColdSeason(day.date)) {
+      return
+    }
+
+    const hasColdDangerSequence = day.tempMin <= -15 && hasMatchingAdjacentDay(sortedDays, index, (adjacentDay) => isColdSeason(adjacentDay.date) && adjacentDay.tempMin <= -15)
+    const hasColdCautionSequence = day.tempMin <= -12 && hasMatchingAdjacentDay(sortedDays, index, (adjacentDay) => isColdSeason(adjacentDay.date) && adjacentDay.tempMin <= -12)
+
+    if (hasColdDangerSequence) {
+      coldLevels.set(day.date, 'danger')
+    } else if (hasColdCautionSequence) {
+      coldLevels.set(day.date, 'caution')
+    }
+  })
+
+  return { heatLevels, coldLevels }
+}
+
+export const useTripPeriodCoach = ({ dailyForecast, forecastDailyContext, hourlyForecast, travelType }) => {
   const analyzedDays = computed(() => {
     const days = unref(dailyForecast) ?? []
+    const contextDays = unref(forecastDailyContext) ?? days
     const hours = unref(hourlyForecast) ?? []
     const selectedTravelType = unref(travelType)
+    const { heatLevels, coldLevels } = getOfficialTemperatureLevels(contextDays)
 
     return [...days]
       .sort((first, second) => first.date.localeCompare(second.date))
       .map((day) => {
         const dayHours = hours.filter((hour) => hour.time.startsWith(day.date))
-        const risks = analyzeTravelRisks(day, dayHours, selectedTravelType)
+        const assessedDay = {
+          ...day,
+          officialHeatLevel: heatLevels.get(day.date) ?? null,
+          officialColdLevel: coldLevels.get(day.date) ?? null,
+        }
+        const risks = analyzeTravelRisks(assessedDay, dayHours, selectedTravelType)
         const status = getDayStatus(risks)
 
         return {
-          ...day,
+          ...assessedDay,
           formattedDate: formatTravelDate(day.date),
           hours: dayHours,
           risks,
@@ -73,27 +133,25 @@ export const useTripPeriodCoach = ({ dailyForecast, hourlyForecast, travelType }
       })
   })
 
-  const priorityDay = computed(() => {
-    return analyzedDays.value.reduce((selected, day) => (!selected || day.status.score > selected.status.score ? day : selected), null)
-  })
-
   const periodStatus = computed(() => {
     const dangerCount = analyzedDays.value.reduce((sum, day) => sum + day.status.dangerCount, 0)
     const cautionCount = analyzedDays.value.reduce((sum, day) => sum + day.status.cautionCount, 0)
+    const dangerDayCount = analyzedDays.value.filter((day) => day.status.level === 'danger').length
+    const cautionDayCount = analyzedDays.value.filter((day) => day.status.level === 'caution').length
 
     if (dangerCount > 0) {
       return {
         level: 'danger',
-        title: `${priorityDay.value?.formattedDate ?? '선택 기간'} 일정 재검토 권장`,
-        description: `여행 기간에 높은 위험 ${dangerCount}개와 주의 ${cautionCount}개가 예상됩니다. 가장 주의할 날의 상세 예보를 확인하세요.`,
+        title: `여행 기간 중 ${dangerDayCount}일 일정 재검토 권장`,
+        description: `높은 위험 ${dangerCount}개와 주의 ${cautionCount}개가 예상됩니다. 기준 초과 정도를 반영한 날짜별 분석을 확인하세요.`,
       }
     }
 
     if (cautionCount > 0) {
       return {
         level: 'caution',
-        title: `${priorityDay.value?.formattedDate ?? '선택 기간'} 준비 필요`,
-        description: `여행 기간에 ${cautionCount}개의 주의 요소가 있습니다. 날짜별 주의 시간대와 준비물을 확인하세요.`,
+        title: `여행 기간 중 ${cautionDayCount}일 준비 필요`,
+        description: `여행 기간에 ${cautionCount}개의 주의 요소가 있습니다. 기준 초과 정도를 반영한 날짜별 분석을 확인하세요.`,
       }
     }
 
@@ -132,7 +190,6 @@ export const useTripPeriodCoach = ({ dailyForecast, hourlyForecast, travelType }
 
   return {
     analyzedDays,
-    priorityDay,
     periodStatus,
     packingItems,
     periodForecast,

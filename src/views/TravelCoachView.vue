@@ -51,6 +51,8 @@ const selectedPeriodHourlyForecast = computed(() => {
   )
 })
 
+const forecastDailyContext = computed(() => travelStore.selectedForecast?.daily ?? [])
+
 const selectedTravelTypeId = computed(() => travelPlan.value.travelType)
 
 const tripDayCount = computed(() => {
@@ -79,13 +81,14 @@ const officialWarningContext = computed(() => {
   return travelStore.selectedCity?.name ?? '선택 지역'
 })
 
-const { analyzedDays, priorityDay, periodStatus, packingItems, periodForecast } = useTripPeriodCoach({
+const { analyzedDays, periodStatus, packingItems, periodForecast } = useTripPeriodCoach({
   dailyForecast: selectedPeriodForecast,
+  forecastDailyContext,
   hourlyForecast: selectedPeriodHourlyForecast,
   travelType: selectedTravelTypeId,
 })
 
-const priorityRisks = computed(() => priorityDay.value?.risks ?? [])
+const riskDays = computed(() => analyzedDays.value.filter((day) => day.status.score > 0))
 
 const packingListKey = computed(() => {
   return `${travelPlan.value.cityId}-${travelPlan.value.startDate}-${travelPlan.value.endDate}-${travelPlan.value.travelType}`
@@ -343,30 +346,37 @@ onMounted(() => {
 
       <TravelDayForecastCards :days="analyzedDays" />
 
-      <TravelRiskList :status="periodStatus" :risks="priorityRisks" />
+      <TravelRiskList :status="periodStatus" :days="riskDays" />
 
       <TravelPackingList :key="packingListKey" :items="packingItems" />
 
       <el-collapse class="analysis-guide">
         <el-collapse-item title="앱 분석 기준과 한계 보기" name="analysis-guide">
           <p>
-            강수·돌풍·체감온도·가시거리 기준은 여행 일정 조정을 돕기 위한 앱 내부 참고 기준입니다. 자외선은 WHO 분류를 참고하며,
+            강수·돌풍·폭염·한파·대설은 기상청 특보의 수치 기준을 사용하고, 안개는 기상청의 가시거리 정의를 사용합니다. 자외선은 WHO 분류를 따르며,
             <template v-if="travelStore.selectedForecast?.provider === 'openweather'">대기질은 OpenWeather 1~5단계를 사용합니다.</template>
             <template v-else>대기질은 미국 AQI 분류를 사용합니다.</template>
-            실제 안전 결정은 기상청 특보와 현장 통제 안내를 우선하세요.
+            앱 판정은 수치 예보를 기준에 대입한 예상값이므로 실제 기상청 특보와 현장 통제 안내를 우선하세요.
           </p>
           <div class="criteria-list">
-            <span>강수: 시간대별 확률 60% 또는 제공 예보 구간 누적 5mm부터 주의</span>
-            <span>돌풍: 여행 유형별 8~12m/s부터 주의</span>
-            <span>체감온도: 30℃ 이상 또는 0℃ 이하부터 주의</span>
-            <span>가시거리: 운전 2km·기타 활동 1km 미만 또는 안개 예보부터 앱 주의 · 500m 미만 시야 위험</span>
-            <span>눈: 눈 예보부터 주의 · 운전 2cm·기타 활동 5cm 이상 또는 강한 눈 예보 시 위험</span>
+            <span>위험도: 각 항목의 기준 초과 정도를 0~100으로 환산한 뒤 동일한 비중으로 모두 합산</span>
+            <span>호우: 3시간 60mm·12시간 110mm부터 주의보, 3시간 90mm·12시간 180mm부터 경보 기준</span>
+            <span>강풍: 순간풍속 육상 20/26m/s, 산지 25/30m/s부터 주의보/경보 기준</span>
+            <span>폭염: 최고 체감온도 33/35℃ 이상이 2일 이상 이어질 때 주의보/경보 기준</span>
+            <span>한파: 10~4월 최저기온 -12/-15℃ 이하가 2일 이상 이어질 때 주의보/경보의 절대기온 기준</span>
+            <span>안개: 가시거리 1km 미만부터 주의 · 200m 미만 짙은 안개는 높은 위험</span>
+            <span>대설: 24시간 적설 5cm부터 주의보, 육상 20cm·산지 30cm부터 경보 기준</span>
+            <span>뇌우: WMO 뇌우 코드가 있으면 낙뢰 위험으로 분류</span>
             <span>자외선: 6 이상 주의 · 8 이상 위험</span>
             <span v-if="travelStore.selectedForecast?.provider === 'openweather'">OpenWeather 대기질: 4/5단계부터 주의 · 5/5단계 높은 위험</span>
             <span v-else>미국 AQI: 101 이상 주의 · 151 이상 높은 위험</span>
           </div>
           <p class="reference-links">
             참고:
+            <a href="https://www.weather.go.kr/w/forecast/guide/standard.do" target="_blank" rel="noopener noreferrer">기상청 특보 기준</a>
+            ·
+            <a href="https://open-meteo.com/en/docs" target="_blank" rel="noopener noreferrer">WMO 예보 코드</a>
+            ·
             <a href="https://www.who.int/news-room/questions-and-answers/item/radiation-the-ultraviolet-%28uv%29-index" target="_blank" rel="noopener noreferrer">WHO 자외선 지수</a>
             ·
             <a v-if="travelStore.selectedForecast?.provider === 'openweather'" href="https://openweathermap.org/api/air-pollution" target="_blank" rel="noopener noreferrer">OpenWeather 대기질 단계</a>

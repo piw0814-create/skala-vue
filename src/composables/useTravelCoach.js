@@ -4,15 +4,18 @@ import { formatNumber } from '@/utils/numberFormat'
 
 const THUNDERSTORM_CODES = [95, 96, 99]
 const SNOW_CODES = [71, 73, 75, 77, 85, 86]
-const HEAVY_SNOW_CODES = [75, 86]
 const FOG_CODES = [45, 48]
-const DANGEROUS_VISIBILITY = 500
+const FOG_VISIBILITY = 1000
+const DENSE_FOG_VISIBILITY = 200
+const CAUTION_SEVERITY_SCORE = 40
+const DANGER_SEVERITY_SCORE = 70
+const MAX_SEVERITY_SCORE = 100
 
 const WIND_THRESHOLDS = {
-  'city-tour': { caution: 10, danger: 15 },
-  camping: { caution: 8, danger: 12 },
-  hiking: { caution: 10, danger: 15 },
-  drive: { caution: 12, danger: 18 },
+  'city-tour': { caution: 20, danger: 26, critical: 35 },
+  camping: { caution: 20, danger: 26, critical: 35 },
+  hiking: { caution: 25, danger: 30, critical: 40 },
+  drive: { caution: 20, danger: 26, critical: 35 },
 }
 
 const ACTIVITY_HOURS = {
@@ -34,9 +37,67 @@ const getMin = (values) => {
   return numbers.length > 0 ? Math.min(...numbers) : null
 }
 
-const getSum = (values) => {
-  const numbers = getNumbers(values)
-  return numbers.length > 0 ? numbers.reduce((sum, value) => sum + value, 0) : null
+const clamp = (value, minimum, maximum) => Math.min(Math.max(value, minimum), maximum)
+
+const interpolateScore = (value, inputMinimum, inputMaximum, scoreMinimum, scoreMaximum) => {
+  if (inputMaximum <= inputMinimum) {
+    return scoreMaximum
+  }
+
+  const ratio = clamp((value - inputMinimum) / (inputMaximum - inputMinimum), 0, 1)
+  return scoreMinimum + (scoreMaximum - scoreMinimum) * ratio
+}
+
+const getUpperSeverity = (value, cautionThreshold, dangerThreshold, criticalThreshold) => {
+  if (!Number.isFinite(value) || value < cautionThreshold) {
+    return 0
+  }
+
+  if (value < dangerThreshold) {
+    return interpolateScore(value, cautionThreshold, dangerThreshold, CAUTION_SEVERITY_SCORE, DANGER_SEVERITY_SCORE)
+  }
+
+  return interpolateScore(value, dangerThreshold, criticalThreshold, DANGER_SEVERITY_SCORE, MAX_SEVERITY_SCORE)
+}
+
+const getLowerSeverity = (value, cautionThreshold, dangerThreshold, criticalThreshold) => {
+  return getUpperSeverity(-value, -cautionThreshold, -dangerThreshold, -criticalThreshold)
+}
+
+const roundSeverity = (value) => Math.round(clamp(value, 0, MAX_SEVERITY_SCORE))
+
+const getMaximumRollingAmount = (hours, windowSize, getValue) => {
+  const sortedHours = [...hours].sort((first, second) => first.time.localeCompare(second.time))
+  let selected = null
+
+  for (let startIndex = 0; startIndex <= sortedHours.length - windowSize; startIndex += 1) {
+    const windowHours = sortedHours.slice(startIndex, startIndex + windowSize)
+    const isConsecutive = windowHours.every((hour, index) => {
+      if (index === 0) {
+        return true
+      }
+
+      return getForecastTimestamp(hour.time) - getForecastTimestamp(windowHours[index - 1].time) === 60 * 60 * 1000
+    })
+
+    if (!isConsecutive) {
+      continue
+    }
+
+    const values = windowHours.map(getValue)
+
+    if (!values.every(Number.isFinite)) {
+      continue
+    }
+
+    const amount = values.reduce((sum, value) => sum + value, 0)
+
+    if (!selected || amount > selected.amount) {
+      selected = { amount, hours: windowHours }
+    }
+  }
+
+  return selected
 }
 
 const getPeakHour = (hours, getValue, direction = 'max') => {
@@ -159,56 +220,43 @@ export const analyzeTravelRisks = (day, hours, travelType) => {
   const addRisk = (risk) => risks.push({ ...risk, sourceType: 'analysis' })
 
   const thunderHour = hours.find((hour) => THUNDERSTORM_CODES.includes(hour.weatherCode))
-  const maxPrecipitation = getMax(hours.map((hour) => hour.precipitation)) ?? 0
-  const precipitationAmountPeak = getPeakHour(hours, (hour) => hour.precipitation)
-  const precipitationProbabilityPeak = getPeakHour(hours, (hour) => hour.precipitationProbability)
-  const precipitationPeak = maxPrecipitation > 0 ? precipitationAmountPeak : precipitationProbabilityPeak
-  const precipitationProbability = day.precipitationProbabilityMax ?? 0
-  const precipitationSum = day.precipitationSum ?? 0
-  const precipitationPeriodHours = precipitationAmountPeak?.precipitationPeriodHours ?? 1
-  const precipitationPeriodAmount = precipitationAmountPeak?.precipitationPeriodAmount ?? maxPrecipitation
-  const precipitationPeakText = precipitationPeriodHours === 3 ? `3시간 구간 최대 ${formatNumber(precipitationPeriodAmount, 2)}mm` : `시간당 최대 ${formatNumber(maxPrecipitation, 2)}mm`
-  const precipitationDangerHours = (hour) => {
-    if (thunderHour) {
-      return THUNDERSTORM_CODES.includes(hour.weatherCode)
-    }
 
-    if (maxPrecipitation >= 10) {
-      return (hour.precipitation ?? 0) >= 10
-    }
+  if (thunderHour) {
+    const thunderCode = thunderHour.weatherCode
+    const severityScore = thunderCode === 99 ? 100 : thunderCode === 96 ? 85 : DANGER_SEVERITY_SCORE
 
-    return (hour.precipitation ?? 0) > 0
-  }
-  const hasPrecipitationCautionHour = hours.some((hour) => (hour.precipitationProbability ?? 0) >= 60 || (hour.precipitation ?? 0) >= 2)
-  const precipitationCautionHours = (hour) => {
-    if (hasPrecipitationCautionHour) {
-      return (hour.precipitationProbability ?? 0) >= 60 || (hour.precipitation ?? 0) >= 2
-    }
-
-    return (hour.precipitation ?? 0) > 0
-  }
-
-  if (thunderHour || maxPrecipitation >= 10 || precipitationSum >= 30) {
     addRisk({
-      id: 'precipitation',
-      category: 'precipitation',
+      id: 'thunderstorm',
+      category: 'thunderstorm',
       level: 'danger',
-      title: thunderHour ? '뇌우 가능성' : '강한 비 가능성',
-      reason: thunderHour
-        ? `${formatHour(thunderHour.time)} 전후 예보에 뇌우 코드가 포함되어 있습니다.`
-        : `${precipitationPeakText}, 선택 날짜의 제공 예보 구간 누적 ${formatNumber(precipitationSum, 2)}mm입니다.`,
+      title: thunderCode === 99 ? '강한 우박을 동반한 뇌우' : '뇌우 가능성',
+      reason: `${formatHour(thunderHour.time)} 전후 WMO 뇌우 예보 코드가 포함되어 있습니다. 천둥이 들리면 낙뢰의 타격 범위에 있을 수 있습니다.`,
       action: getTravelAction(travelType, 'precipitation', 'danger'),
-      timeRange: getRiskTimeRange(hours, precipitationDangerHours, thunderHour ?? precipitationPeak),
+      timeRange: getRiskTimeRange(hours, (hour) => THUNDERSTORM_CODES.includes(hour.weatherCode), thunderHour),
+      severityScore,
     })
-  } else if (precipitationProbability >= 60 || maxPrecipitation >= 2 || precipitationSum >= 5) {
+  }
+
+  const maxRainfallForThreeHours = getMaximumRollingAmount(hours, 3, (hour) => hour.rainfall ?? hour.precipitation)
+  const maxRainfallForTwelveHours = getMaximumRollingAmount(hours, 12, (hour) => hour.rainfall ?? hour.precipitation)
+  const threeHourRainfall = maxRainfallForThreeHours?.amount ?? 0
+  const twelveHourRainfall = maxRainfallForTwelveHours?.amount ?? 0
+  const meetsRainDanger = threeHourRainfall >= 90 || twelveHourRainfall >= 180
+  const meetsRainCaution = threeHourRainfall >= 60 || twelveHourRainfall >= 110
+
+  if (meetsRainCaution) {
+    const level = meetsRainDanger ? 'danger' : 'caution'
+    const selectedRainWindow = getUpperSeverity(twelveHourRainfall, 110, 180, 250) > getUpperSeverity(threeHourRainfall, 60, 90, 120) ? maxRainfallForTwelveHours : maxRainfallForThreeHours
+
     addRisk({
       id: 'precipitation',
       category: 'precipitation',
-      level: 'caution',
-      title: '비 대비 필요',
-      reason: `시간대별 최고 강수확률 ${formatNumber(precipitationProbability, 0)}%, 제공 예보 구간 누적 강수량 ${formatNumber(precipitationSum, 2)}mm입니다.`,
-      action: getTravelAction(travelType, 'precipitation', 'caution'),
-      timeRange: getRiskTimeRange(hours, precipitationCautionHours, precipitationPeak),
+      level,
+      title: level === 'danger' ? '호우 경보 기준 예상' : '호우 주의보 기준 예상',
+      reason: `최대 3시간 누적 ${formatNumber(threeHourRainfall, 1)}mm, 최대 12시간 누적 ${formatNumber(twelveHourRainfall, 1)}mm로 기상청 호우 ${level === 'danger' ? '경보' : '주의보'} 기준에 해당합니다.`,
+      action: getTravelAction(travelType, 'precipitation', level),
+      timeRange: getRiskTimeRange(hours, (hour) => selectedRainWindow?.hours.includes(hour) ?? false, selectedRainWindow?.hours[0]),
+      severityScore: roundSeverity(Math.max(getUpperSeverity(threeHourRainfall, 60, 90, 120), getUpperSeverity(twelveHourRainfall, 110, 180, 250))),
     })
   }
 
@@ -224,42 +272,46 @@ export const analyzeTravelRisks = (day, hours, travelType) => {
       category: 'wind',
       level,
       title: level === 'danger' ? '강한 돌풍 위험' : '돌풍 주의',
-      reason: `${travelType === 'camping' ? '캠핑' : '선택 활동'} 분석 기준 ${formatNumber(windThreshold.caution, 1)}m/s 이상이며, 최대 돌풍은 ${formatNumber(maxWindGust, 1)}m/s입니다.`,
+      reason: `최대 순간풍속 ${formatNumber(maxWindGust, 1)}m/s로 기상청 ${travelType === 'hiking' ? '산지 ' : ''}강풍 ${level === 'danger' ? '경보' : '주의보'} 기준에 해당합니다.`,
       action: getTravelAction(travelType, 'wind', level),
       timeRange: getRiskTimeRange(hours, (hour) => (hour.windGust ?? 0) >= windThreshold.caution, windPeak),
+      severityScore: roundSeverity(getUpperSeverity(maxWindGust, windThreshold.caution, windThreshold.danger, windThreshold.critical)),
     })
   }
 
   const maxFeelsLike = day.feelsLikeMax ?? getMax(hours.map((hour) => hour.feelsLike))
-  const minFeelsLike = day.feelsLikeMin ?? getMin(hours.map((hour) => hour.feelsLike))
   const heatPeak = getPeakHour(hours, (hour) => hour.feelsLike)
-  const coldPeak = getPeakHour(hours, (hour) => hour.feelsLike, 'min')
 
-  if (Number.isFinite(maxFeelsLike) && maxFeelsLike >= 30) {
-    const level = maxFeelsLike >= 35 ? 'danger' : 'caution'
+  if (day.officialHeatLevel && Number.isFinite(maxFeelsLike)) {
+    const level = day.officialHeatLevel
 
     addRisk({
       id: 'heat',
       category: 'temperature',
       level,
-      title: level === 'danger' ? '매우 높은 체감온도' : '더위 주의',
-      reason: `최고 체감온도가 ${formatNumber(maxFeelsLike, 1)}℃로 예상됩니다.`,
+      title: level === 'danger' ? '폭염 경보 기준 예상' : '폭염 주의보 기준 예상',
+      reason: `일 최고 체감온도 ${formatNumber(maxFeelsLike, 1)}℃ 이상이 2일 이상 이어져 기상청 폭염 ${level === 'danger' ? '경보' : '주의보'} 기준에 해당합니다.`,
       action: level === 'danger' ? '한낮 야외 활동을 피하고 충분한 휴식과 수분을 확보하세요.' : '한낮 활동 시간을 줄이고 물과 그늘을 확보하세요.',
-      timeRange: getRiskTimeRange(hours, (hour) => (hour.feelsLike ?? -Infinity) >= 30, heatPeak),
+      timeRange: getRiskTimeRange(hours, (hour) => (hour.feelsLike ?? -Infinity) >= 33, heatPeak),
+      severityScore: roundSeverity(getUpperSeverity(maxFeelsLike, 33, 35, 38)),
     })
   }
 
-  if (Number.isFinite(minFeelsLike) && minFeelsLike <= 0) {
-    const level = minFeelsLike <= -10 ? 'danger' : 'caution'
+  const minTemperature = day.tempMin ?? getMin(hours.map((hour) => hour.temp))
+  const coldPeak = getPeakHour(hours, (hour) => hour.temp, 'min')
+
+  if (day.officialColdLevel && Number.isFinite(minTemperature)) {
+    const level = day.officialColdLevel
 
     addRisk({
       id: 'cold',
       category: 'temperature',
       level,
-      title: level === 'danger' ? '매우 낮은 체감온도' : '추위 주의',
-      reason: `최저 체감온도가 ${formatNumber(minFeelsLike, 1)}℃로 예상됩니다.`,
+      title: level === 'danger' ? '한파 경보 기준 예상' : '한파 주의보 기준 예상',
+      reason: `아침 최저기온 ${formatNumber(minTemperature, 1)}℃ 이하가 2일 이상 이어져 기상청 한파 ${level === 'danger' ? '경보' : '주의보'}의 절대기온 기준에 해당합니다.`,
       action: '노출 시간을 줄이고 방한 의류와 여분의 보온 장비를 준비하세요.',
-      timeRange: getRiskTimeRange(hours, (hour) => (hour.feelsLike ?? Infinity) <= 0, coldPeak),
+      timeRange: getRiskTimeRange(hours, (hour) => (hour.temp ?? Infinity) <= -12, coldPeak),
+      severityScore: roundSeverity(getLowerSeverity(minTemperature, -12, -15, -20)),
     })
   }
 
@@ -277,6 +329,7 @@ export const analyzeTravelRisks = (day, hours, travelType) => {
       reason: `최대 자외선 지수가 ${formatNumber(maxUvIndex, 1)}로 예상됩니다.`,
       action: level === 'danger' ? '한낮 노출을 피하고 그늘, 긴소매, 모자와 선크림을 활용하세요.' : '모자와 선크림을 준비하고 한낮에는 그늘을 이용하세요.',
       timeRange: getRiskTimeRange(hours, (hour) => (hour.uvIndex ?? 0) >= 6, uvPeak),
+      severityScore: roundSeverity(getUpperSeverity(maxUvIndex, 6, 8, 11)),
     })
   }
 
@@ -296,6 +349,7 @@ export const analyzeTravelRisks = (day, hours, travelType) => {
       reason: `미국 AQI 기준 최고 ${formatNumber(maxAqi, 0)}로 예상됩니다.`,
       action: level === 'danger' ? '장시간 야외 활동을 줄이고 실내 일정을 우선하세요.' : '민감군은 오래 지속되는 야외 활동을 줄이세요.',
       timeRange: getRiskTimeRange(hours, (hour) => (hour.airQuality?.usAqi ?? 0) >= 101, aqiPeak),
+      severityScore: roundSeverity(getUpperSeverity(maxAqi, 101, 151, 301)),
     })
   } else if (Number.isFinite(maxProviderAqi) && maxProviderAqi >= 4) {
     const level = maxProviderAqi >= 5 ? 'danger' : 'caution'
@@ -308,63 +362,63 @@ export const analyzeTravelRisks = (day, hours, travelType) => {
       reason: `OpenWeather 대기질 5단계 중 ${formatNumber(maxProviderAqi, 0)}단계로 예상됩니다.`,
       action: level === 'danger' ? '장시간 야외 활동을 줄이고 실내 일정을 우선하세요.' : '민감군은 오래 지속되는 야외 활동을 줄이세요.',
       timeRange: getRiskTimeRange(hours, (hour) => (hour.airQuality?.providerAqi ?? 0) >= 4, providerAqiPeak),
+      severityScore: maxProviderAqi >= 5 ? DANGER_SEVERITY_SCORE : CAUTION_SEVERITY_SCORE,
     })
   }
 
   const minVisibility = getMin(hours.map((hour) => hour.visibility))
   const visibilityPeak = getPeakHour(hours, (hour) => hour.visibility, 'min')
   const hasFogCode = hours.some((hour) => FOG_CODES.includes(hour.weatherCode))
-  const visibilityCaution = travelType === 'drive' ? 2000 : 1000
-  const hasLowVisibility = Number.isFinite(minVisibility) && minVisibility < visibilityCaution
+  const hasLowVisibility = Number.isFinite(minVisibility) && minVisibility < FOG_VISIBILITY
 
   if (hasFogCode || hasLowVisibility) {
-    const level = Number.isFinite(minVisibility) && minVisibility < DANGEROUS_VISIBILITY ? 'danger' : 'caution'
+    const level = Number.isFinite(minVisibility) && minVisibility < DENSE_FOG_VISIBILITY ? 'danger' : 'caution'
     const isVisibilityRiskHour = (hour) => {
       if (level === 'danger') {
-        return Number.isFinite(hour.visibility) && hour.visibility < DANGEROUS_VISIBILITY
+        return Number.isFinite(hour.visibility) && hour.visibility < DENSE_FOG_VISIBILITY
       }
 
-      return FOG_CODES.includes(hour.weatherCode) || (Number.isFinite(hour.visibility) && hour.visibility < visibilityCaution)
+      return FOG_CODES.includes(hour.weatherCode) || (Number.isFinite(hour.visibility) && hour.visibility < FOG_VISIBILITY)
     }
+
+    const visibilitySeverity = getLowerSeverity(minVisibility, FOG_VISIBILITY, DENSE_FOG_VISIBILITY, 50)
+    const boundedVisibilitySeverity = level === 'danger' ? visibilitySeverity : Math.min(visibilitySeverity, DANGER_SEVERITY_SCORE - 1)
 
     addRisk({
       id: 'visibility',
       category: 'visibility',
       level,
-      title: level === 'danger' ? '500m 미만 시야 위험' : '가시거리 저하 주의',
+      title: level === 'danger' ? '200m 미만 짙은 안개 위험' : '안개로 인한 가시거리 저하',
       reason: hasLowVisibility ? `최저 가시거리가 약 ${formatNumber(minVisibility / 1000, 1)}km로 예상됩니다.` : '예보에 안개 코드가 포함되어 있습니다.',
       action: getTravelAction(travelType, 'visibility', level),
       timeRange: getRiskTimeRange(hours, isVisibilityRiskHour, visibilityPeak),
+      severityScore: roundSeverity(Math.max(hasFogCode ? CAUTION_SEVERITY_SCORE : 0, boundedVisibilitySeverity)),
     })
   }
 
-  const snowfallSum = day.snowfallSum ?? getSum(hours.map((hour) => hour.snowfall)) ?? 0
-  const hasSnowCode = hours.some((hour) => SNOW_CODES.includes(hour.weatherCode))
-  const hasHeavySnowCode = hours.some((hour) => HEAVY_SNOW_CODES.includes(hour.weatherCode))
+  const snowfallSum = day.snowfallSum
+  const snowDangerThreshold = travelType === 'hiking' ? 30 : 20
 
-  if (hasSnowCode || snowfallSum > 0) {
-    const dangerThreshold = travelType === 'drive' ? 2 : 5
-    const level = hasHeavySnowCode || snowfallSum >= dangerThreshold ? 'danger' : 'caution'
+  if (Number.isFinite(snowfallSum) && snowfallSum >= 5) {
+    const level = snowfallSum >= snowDangerThreshold ? 'danger' : 'caution'
+    const snowPeak = getPeakHour(hours, (hour) => hour.snowfall)
 
     addRisk({
       id: 'snow',
       category: 'snow',
       level,
-      title: level === 'danger' ? '적설·결빙 위험' : '눈 대비 필요',
-      reason:
-        snowfallSum > 0
-          ? `예상 적설량은 ${formatNumber(snowfallSum, 2)}cm이며 도로와 탐방로가 미끄러울 수 있습니다.`
-          : hasHeavySnowCode
-            ? '예보에 강한 눈 코드가 포함되어 있어 적설과 결빙에 대비해야 합니다.'
-            : '예보에 눈 가능성이 포함되어 있어 도로와 탐방로가 미끄러울 수 있습니다.',
+      title: level === 'danger' ? '대설 경보 기준 예상' : '대설 주의보 기준 예상',
+      reason: `24시간 예상 적설량 ${formatNumber(snowfallSum, 1)}cm로 기상청 ${travelType === 'hiking' ? '산지 ' : ''}대설 ${level === 'danger' ? '경보' : '주의보'} 기준에 해당합니다.`,
       action: travelType === 'drive' ? '겨울용 타이어와 도로 통제 정보를 확인하고 급가속·급제동을 피하세요.' : '방수 신발과 미끄럼 방지 장비를 준비하세요.',
-      timeRange: getRiskTimeRange(hours, (hour) => SNOW_CODES.includes(hour.weatherCode) || (hour.snowfall ?? 0) > 0),
+      timeRange: getRiskTimeRange(hours, (hour) => SNOW_CODES.includes(hour.weatherCode) || (hour.snowfall ?? 0) > 0, snowPeak),
+      severityScore: roundSeverity(getUpperSeverity(snowfallSum, 5, snowDangerThreshold, snowDangerThreshold + 10)),
     })
   }
 
   return risks.sort((a, b) => {
     const priority = { danger: 0, caution: 1 }
-    return priority[a.level] - priority[b.level]
+    const levelOrder = priority[a.level] - priority[b.level]
+    return levelOrder === 0 ? b.severityScore - a.severityScore : levelOrder
   })
 }
 
